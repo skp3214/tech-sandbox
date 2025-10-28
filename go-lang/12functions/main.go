@@ -51,6 +51,17 @@ func main() {
 
 	result:=factorial_recursion(5)
 	fmt.Println(result)
+
+	// IIFE
+
+	func (){
+		fmt.Println("Immediately Invoked Function Expression")
+	}()
+
+	// multiple values
+
+	valueProAdder:=proAdder(5,6,7,8);
+	fmt.Println(valueProAdder)
 }
 
 func familyName(name string) {
@@ -79,4 +90,13 @@ func factorial_recursion(x int) (y int) {
 		y=1
 	}
 	return
+}
+
+
+func proAdder(values ...int)int{
+	total:=0
+	for _,val:=range values{
+		total+=val
+	}
+	return total
 }
