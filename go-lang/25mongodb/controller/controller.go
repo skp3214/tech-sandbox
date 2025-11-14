@@ -60,3 +60,45 @@ func updateOneMovie(movieID string) {
 	}
 	fmt.Println("Modified count: ", result.ModifiedCount)
 }
+
+func deleteOneMovie(movieId string) {
+	id, err := primitive.ObjectIDFromHex(movieId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	filter := bson.M{"_id": id}
+
+	deleteCount, err := collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Deleted count: ", deleteCount.DeletedCount)
+}
+
+func deleteAllMvies() {
+	filter := bson.D{{}}
+	deleteResult, err := collection.DeleteMany(context.Background(), filter, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Deleted count: ", deleteResult.DeletedCount)
+}
+
+func getAllMovies() []primitive.M {
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	var movies []primitive.M
+	for cursor.Next(context.Background()) {
+		var movie bson.M
+		err := cursor.Decode(&movie)
+		if err != nil {
+			log.Fatal(err)
+		}
+		movies = append(movies, movie)
+	}
+	defer cursor.Close(context.Background())
+	return movies
+}
+
