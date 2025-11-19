@@ -5,6 +5,7 @@
 ### Indexing
 
 #### [Box Model](#box-model)
+#### [Browser Formatting Context](#browser-formatting-context-1)
 
 ### Box Model
 
@@ -39,3 +40,10 @@
     - ![alt text](image-3.png)
   - `Anonymous` box
 
+### Browser Formatting Context
+
+![alt text](image-4.png)
+
+![alt text](image-5.png)
+
+![alt text](image-6.png)
