@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Positioning: Relative vs Absolute</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #764ba2;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: "📍";
+            margin-right: 10px;
+        }
+
+        .description {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            line-height: 1.6;
+        }
+
+        .code-snippet {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+
+        /* STATIC POSITIONING (DEFAULT) */
+        .static-demo {
+            background: #fff3cd;
+            padding: 20px;
+            border: 2px dashed #ffc107;
+            border-radius: 5px;
+        }
+
+        .static-box {
+            width: 150px;
+            height: 100px;
+            background: #ffc107;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        /* RELATIVE POSITIONING */
+        .relative-demo {
+            background: #d1ecf1;
+            padding: 20px;
+            border: 2px dashed #17a2b8;
+            border-radius: 5px;
+            position: relative;
+            min-height: 200px;
+        }
+
+        .relative-box {
+            width: 150px;
+            height: 100px;
+            background: #17a2b8;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        .relative-box-normal {
+            position: static;
+            margin: 10px;
+        }
+
+        .relative-box-moved {
+            position: relative;
+            top: 30px;
+            left: 50px;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .ghost-outline {
+            width: 150px;
+            height: 100px;
+            border: 2px dashed #666;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 0.8em;
+            border-radius: 5px;
+        }
+
+        /* ABSOLUTE POSITIONING */
+        .absolute-demo {
+            background: #f8d7da;
+            padding: 20px;
+            border: 2px dashed #dc3545;
+            border-radius: 5px;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .absolute-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: #ffe5e5;
+            border: 3px solid #dc3545;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .absolute-container-label {
+            position: absolute;
+            top: -15px;
+            left: 10px;
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .absolute-box {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            background: #dc3545;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .abs-top-left {
+            top: 10px;
+            left: 10px;
+        }
+
+        .abs-top-right {
+            top: 10px;
+            right: 10px;
+        }
+
+        .abs-bottom-left {
+            bottom: 10px;
+            left: 10px;
+        }
+
+        .abs-bottom-right {
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .abs-center {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ff6b6b;
+        }
+
+        /* COMBINED EXAMPLE */
+        .combined-demo {
+            background: #d4edda;
+            padding: 20px;
+            border: 2px dashed #28a745;
+            border-radius: 5px;
+        }
+
+        .parent-relative {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #c3e6cb;
+            border: 3px solid #28a745;
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        .parent-label {
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 10px;
+        }
+
+        .child-absolute {
+            position: absolute;
+            width: 100px;
+            height: 70px;
+            background: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 0.85em;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .child1 {
+            top: 20px;
+            right: 20px;
+        }
+
+        .child2 {
+            bottom: 20px;
+            left: 20px;
+        }
+
+        /* KEY POINTS */
+        .key-points {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .key-points h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .key-points ul {
+            list-style-position: inside;
+            line-height: 1.8;
+        }
+
+        .key-points li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .key-points li strong {
+            color: #764ba2;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CSS Positioning Guide</h1>
+        <p class="subtitle">Understanding Relative and Absolute Positioning</p>
+
+        <!-- STATIC POSITIONING -->
+        <div class="section">
+            <h2 class="section-title">1. Static Positioning (Default)</h2>
+            <div class="description">
+                <strong>What is it?</strong> The default positioning for all elements. Elements follow the normal document flow.
+                <br><br>
+                <strong>Key Point:</strong> <span class="highlight">top, right, bottom, left</span> properties have NO effect on static elements.
+            </div>
+            <div class="code-snippet">
+.static-box {
+    position: static; /* This is default */
+}
+            </div>
+            <div class="static-demo">
+                <div class="static-box">Box 1 (Static)</div>
+                <div class="static-box">Box 2 (Static)</div>
+                <div class="static-box">Box 3 (Static)</div>
+            </div>
+        </div>
+
+        <!-- RELATIVE POSITIONING -->
+        <div class="section">
+            <h2 class="section-title">2. Relative Positioning</h2>
+            <div class="description">
+                <strong>What is it?</strong> The element is positioned relative to its <strong>normal position</strong>.
+                <br><br>
+                <strong>Key Point:</strong> The element's <strong>original space is preserved</strong> in the document flow (leaves a "ghost" behind).
+                <br><br>
+                <strong>Use Case:</strong> Minor adjustments or as a positioning context for absolute children.
+            </div>
+            <div class="code-snippet">
+.relative-box-moved {
+    position: relative;
+    top: 30px;    /* Moves DOWN 30px from original position */
+    left: 50px;   /* Moves RIGHT 50px from original position */
+}
+            </div>
+            <div class="relative-demo">
+                <div class="relative-box relative-box-normal">Box 1 (Normal)</div>
+                <div class="ghost-outline">Original Space (Ghost)</div>
+                <div class="relative-box relative-box-moved">Box 2 (Moved)<br>top: 30px, left: 50px</div>
+                <div class="relative-box relative-box-normal">Box 3 (Normal)</div>
+            </div>
+            <div class="key-points">
+                <h3>🔑 Key Points:</h3>
+                <ul>
+                    <li><strong>Space Preserved:</strong> Other elements act as if this element is still in its original position</li>
+                    <li><strong>Relative to Self:</strong> Movement is relative to where it would normally be</li>
+                    <li><strong>Visual Only:</strong> The movement is purely visual; layout remains unchanged</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ABSOLUTE POSITIONING -->
+        <div class="section">
+            <h2 class="section-title">3. Absolute Positioning</h2>
+            <div class="description">
+                <strong>What is it?</strong> The element is positioned relative to its nearest <strong>positioned ancestor</strong> (position: relative, absolute, fixed, or sticky).
+                <br><br>
+                <strong>Key Point:</strong> The element is <strong>removed from the document flow</strong> - it doesn't take up space!
+                <br><br>
+                <strong>Use Case:</strong> Overlays, tooltips, dropdowns, positioning elements at specific locations.
+            </div>
+            <div class="code-snippet">
+.absolute-container {
+    position: relative;  /* This becomes the reference point */
+}
+
+.absolute-box {
+    position: absolute;
+    top: 10px;     /* 10px from parent's top */
+    left: 10px;    /* 10px from parent's left */
+}
+            </div>
+            <div class="absolute-demo">
+                <div class="absolute-container">
+                    <span class="absolute-container-label">position: relative (Parent Container)</span>
+                    <div class="absolute-box abs-top-left">top: 10px<br>left: 10px</div>
+                    <div class="absolute-box abs-top-right">top: 10px<br>right: 10px</div>
+                    <div class="absolute-box abs-bottom-left">bottom: 10px<br>left: 10px</div>
+                    <div class="absolute-box abs-bottom-right">bottom: 10px<br>right: 10px</div>
+                    <div class="absolute-box abs-center">CENTERED<br>transform: translate(-50%, -50%)</div>
+                </div>
+            </div>
+            <div class="key-points">
+                <h3>🔑 Key Points:</h3>
+                <ul>
+                    <li><strong>Removed from Flow:</strong> Doesn't affect other elements' positions</li>
+                    <li><strong>Positioned Ancestor:</strong> Looks for nearest parent with position: relative/absolute/fixed/sticky</li>
+                    <li><strong>Viewport Fallback:</strong> If no positioned ancestor exists, it positions relative to the viewport</li>
+                    <li><strong>Z-axis Control:</strong> Can overlap other elements (use z-index to control stacking)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- COMBINED EXAMPLE -->
+        <div class="section">
+            <h2 class="section-title">4. Combined: Relative Parent + Absolute Children</h2>
+            <div class="description">
+                <strong>Most Common Pattern:</strong> Set parent to <span class="highlight">position: relative</span> and children to <span class="highlight">position: absolute</span>.
+                <br><br>
+                <strong>Why?</strong> The parent acts as a positioning context without moving from its normal position, while children can be positioned anywhere within it.
+            </div>
+            <div class="code-snippet">
+.parent-relative {
+    position: relative;  /* Creates positioning context */
+    /* No top/left/right/bottom needed */
+}
+
+.child-absolute {
+    position: absolute;
+    top: 20px;      /* Relative to .parent-relative */
+    right: 20px;    /* NOT to the viewport */
+}
+            </div>
+            <div class="combined-demo">
+                <div class="parent-relative">
+                    <div class="parent-label">🎯 Parent Container (position: relative)</div>
+                    <p style="color: #155724; margin-top: 10px;">This parent has normal flow. The absolute children are positioned relative to this container's boundaries.</p>
+                    <div class="child-absolute child1">Absolute Child 1<br>(top-right)</div>
+                    <div class="child-absolute child2">Absolute Child 2<br>(bottom-left)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOVING PARENT DEMO -->
+        <div class="section">
+            <h2 class="section-title">5. What Happens When Parent Moves? 🔄</h2>
+            <div class="description">
+                <strong>Key Concept:</strong> When you move a relatively-positioned parent, <strong>the absolute children move with it!</strong>
+                <br><br>
+                <strong>Why?</strong> Absolute children are positioned relative to their parent container's boundaries. When the parent moves, those boundaries move too.
+                <br><br>
+                <strong>Try it:</strong> Click the button below to move the parent and watch the children move with it!
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button id="moveParentBtn" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                    transition: all 0.3s ease;
+                    margin: 5px;
+                ">
+                    Move Parent → →
+                </button>
+                <button id="resetParentBtn" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s ease;
+                    margin: 5px;
+                ">
+                    Reset Position
+                </button>
+            </div>
+
+            <div class="code-snippet" id="currentPositionCode">
+.parent-movable {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    /* Children stay relative to parent's NEW position */
+}
+            </div>
+
+            <div class="combined-demo">
+                <div style="position: relative; min-height: 350px;">
+                    <div class="ghost-outline" style="width: calc(100% - 40px); height: 300px; margin: 10px; position: absolute; top: 0; left: 0;">
+                        Original Position<br>(Ghost Space)
+                    </div>
+                    <div class="parent-relative" id="movableParent" style="transition: all 0.5s ease;">
+                        <div class="parent-label">🎯 Movable Parent (position: relative)</div>
+                        <p style="color: #155724; margin-top: 10px;">Watch me and my children move together! The children maintain their position <strong>relative to me</strong>.</p>
+                        <div class="child-absolute child1">Child 1<br>Moves with Parent!</div>
+                        <div class="child-absolute child2">Child 2<br>Moves with Parent!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-points">
+                <h3>🔑 What's Happening:</h3>
+                <ul>
+                    <li><strong>Parent Moves:</strong> When parent has <span class="highlight">top/left</span> applied, it shifts from its original position</li>
+                    <li><strong>Children Move Too:</strong> Absolute children maintain their position <strong>relative to parent's boundaries</strong></li>
+                    <li><strong>Relationship Preserved:</strong> Child's <span class="highlight">top: 20px</span> is always 20px from parent's top edge, wherever that edge is</li>
+                    <li><strong>Ghost Space:</strong> The parent's original space is still reserved in the document flow (shown by dashed outline)</li>
+                    <li><strong>Visual Movement:</strong> Both parent and children move visually, but the layout around them doesn't change</li>
+                </ul>
+            </div>
+
+            <div style="background: #fff3cd; padding: 20px; border-radius: 5px; border-left: 4px solid #ffc107; margin-top: 20px;">
+                <strong>💡 Pro Tip:</strong> This is why <span class="highlight">position: relative</span> on a parent without any offset (top/left/right/bottom) is so useful - it creates a positioning context for absolute children <strong>without moving anything</strong>. But when you DO move it, everything inside moves as a unit!
+            </div>
+        </div>
+
+        <!-- ABSOLUTE PARENT + ABSOLUTE CHILDREN -->
+        <div class="section">
+            <h2 class="section-title">6. Absolute Parent + Absolute Children 🎭</h2>
+            <div class="description">
+                <strong>What's Different?</strong> When BOTH parent and children are absolute, they're BOTH removed from document flow!
+                <br><br>
+                <strong>Key Point:</strong> Parent doesn't reserve space, and children still position relative to parent's boundaries.
+                <br><br>
+                <strong>Try it:</strong> Click to move the absolute parent and watch the children move with it!
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button id="moveAbsoluteParentBtn" style="
+                    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+                    transition: all 0.3s ease;
+                    margin: 5px;
+                ">
+                    Move Absolute Parent → →
+                </button>
+                <button id="resetAbsoluteParentBtn" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s ease;
+                    margin: 5px;
+                ">
+                    Reset Position
+                </button>
+            </div>
+
+            <div class="code-snippet" id="absolutePositionCode">
+.parent-absolute {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.child-absolute {
+    position: absolute;
+    top: 20px;    /* Still relative to parent! */
+    right: 20px;
+}
+            </div>
+
+            <div style="background: #f8d7da; padding: 20px; border: 2px dashed #dc3545; border-radius: 5px; min-height: 400px; position: relative;">
+                <div style="position: static; padding: 10px; background: white; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>📦 Outer Container (position: relative)</strong> - This is the positioning context
+                </div>
+                
+                <div style="border: 2px dashed #999; padding: 10px; background: rgba(255,255,255,0.3); border-radius: 5px; min-height: 150px;">
+                    <p style="color: #333; margin: 0; font-size: 0.9em;">⬇️ This is where content normally flows...</p>
+                    <p style="color: #333; margin: 10px 0 0 0; font-size: 0.9em;">Notice: The absolute parent DOES NOT take up space here!</p>
+                </div>
+
+                <div id="absoluteParent" style="
+                    position: absolute;
+                    top: 20px;
+                    left: 20px;
+                    width: 300px;
+                    height: 250px;
+                    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                    border: 3px solid #bd2130;
+                    border-radius: 8px;
+                    padding: 20px;
+                    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+                    transition: all 0.5s ease;
+                    color: white;
+                ">
+                    <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 5px;">
+                        🎯 Absolute Parent
+                    </div>
+                    <p style="font-size: 0.9em; margin: 10px 0;">I'm removed from document flow! I don't affect other elements.</p>
+                    
+                    <div style="
+                        position: absolute;
+                        top: 20px;
+                        right: 20px;
+                        width: 80px;
+                        height: 60px;
+                        background: #fff;
+                        color: #dc3545;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        border-radius: 5px;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                        font-size: 0.75em;
+                        text-align: center;
+                    ">
+                        Child 1<br>TOP-RIGHT
+                    </div>
+                    
+                    <div style="
+                        position: absolute;
+                        bottom: 20px;
+                        left: 20px;
+                        width: 80px;
+                        height: 60px;
+                        background: #fff;
+                        color: #dc3545;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        border-radius: 5px;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                        font-size: 0.75em;
+                        text-align: center;
+                    ">
+                        Child 2<br>BOTTOM-LEFT
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-points" style="margin-top: 20px;">
+                <h3>🔑 Key Differences from Relative Parent:</h3>
+                <ul>
+                    <li><strong>No Space Reserved:</strong> The absolute parent doesn't take up any space in the document flow - other content flows as if it doesn't exist</li>
+                    <li><strong>Children Still Relative to Parent:</strong> Absolute children STILL position relative to the absolute parent's boundaries, NOT the viewport</li>
+                    <li><strong>Both Move Together:</strong> Just like with relative parent, when the absolute parent moves, children move with it</li>
+                    <li><strong>Positioning Context Chain:</strong> The absolute parent creates a positioning context for its absolute children</li>
+                    <li><strong>Overlapping Content:</strong> Because it's removed from flow, it can overlap other content</li>
+                </ul>
+            </div>
+
+            <div style="background: #d1ecf1; padding: 20px; border-radius: 5px; border-left: 4px solid #17a2b8; margin-top: 20px;">
+                <strong>🤔 When to Use:</strong>
+                <ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+                    <li><strong>Modals/Overlays:</strong> When you want the entire parent-child group to float above everything</li>
+                    <li><strong>Tooltips:</strong> Positioned absolutely relative to a button, with absolute arrow/content inside</li>
+                    <li><strong>Floating Widgets:</strong> Chat boxes, notifications that need to float with internal absolute positioning</li>
+                    <li><strong>Image Galleries:</strong> Absolute container with absolutely positioned captions/buttons inside</li>
+                </ul>
+            </div>
+
+            <div style="background: #f8d7da; padding: 20px; border-radius: 5px; border-left: 4px solid #dc3545; margin-top: 20px;">
+                <strong>⚠️ Important:</strong> The absolute parent looks for ITS nearest positioned ancestor (in this demo, the outer container with <span class="highlight">position: relative</span>). The children then position relative to the absolute parent, creating a nested positioning hierarchy.
+            </div>
+        </div>
+
+        <!-- COMPARISON TABLE -->
+        <div class="section">
+            <h2 class="section-title">7. Quick Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Static (Default)</th>
+                        <th>Relative</th>
+                        <th>Absolute</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Document Flow</strong></td>
+                        <td>✅ In flow</td>
+                        <td>✅ In flow</td>
+                        <td>❌ Removed from flow</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Space Reserved</strong></td>
+                        <td>✅ Yes</td>
+                        <td>✅ Yes (at original position)</td>
+                        <td>❌ No</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Positioned Relative To</strong></td>
+                        <td>N/A</td>
+                        <td>Its normal position</td>
+                        <td>Nearest positioned ancestor</td>
+                    </tr>
+                    <tr>
+                        <td><strong>top/left/right/bottom</strong></td>
+                        <td>❌ No effect</td>
+                        <td>✅ Works</td>
+                        <td>✅ Works</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Common Use Case</strong></td>
+                        <td>Default behavior</td>
+                        <td>Minor adjustments, positioning context</td>
+                        <td>Overlays, tooltips, precise positioning</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PRACTICAL TIPS -->
+        <div class="section">
+            <h2 class="section-title">8. Practical Tips</h2>
+            <div class="key-points">
+                <ul>
+                    <li><strong>Relative for Parent:</strong> Use <span class="highlight">position: relative</span> on parent containers to create a positioning context for absolute children</li>
+                    <li><strong>Absolute for Overlays:</strong> Use <span class="highlight">position: absolute</span> for elements that should float over content (modals, tooltips, badges)</li>
+                    <li><strong>Centering Trick:</strong> Use <span class="highlight">top: 50%; left: 50%; transform: translate(-50%, -50%)</span> to center absolute elements</li>
+                    <li><strong>Z-index Control:</strong> Absolute elements can overlap; use <span class="highlight">z-index</span> to control stacking order</li>
+                    <li><strong>Responsive Design:</strong> Be careful with absolute positioning on small screens - consider using media queries</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive demo for moving parent
+        const movableParent = document.getElementById('movableParent');
+        const moveBtn = document.getElementById('moveParentBtn');
+        const resetBtn = document.getElementById('resetParentBtn');
+        const codeDisplay = document.getElementById('currentPositionCode');
+        
+        let currentTop = 0;
+        let currentLeft = 0;
+
+        moveBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+        });
+
+        moveBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+        });
+
+        resetBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+
+        resetBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+
+        moveBtn.addEventListener('click', function() {
+            currentTop += 30;
+            currentLeft += 50;
+            
+            movableParent.style.top = currentTop + 'px';
+            movableParent.style.left = currentLeft + 'px';
+            
+            updateCodeDisplay();
+        });
+
+        resetBtn.addEventListener('click', function() {
+            currentTop = 0;
+            currentLeft = 0;
+            
+            movableParent.style.top = '0px';
+            movableParent.style.left = '0px';
+            
+            updateCodeDisplay();
+        });
+
+        function updateCodeDisplay() {
+            codeDisplay.textContent = `.parent-movable {
+    position: relative;
+    top: ${currentTop}px;
+    left: ${currentLeft}px;
+    /* Children stay relative to parent's NEW position */
+}`;
+        }
+
+        // Interactive demo for absolute parent
+        const absoluteParent = document.getElementById('absoluteParent');
+        const moveAbsBtn = document.getElementById('moveAbsoluteParentBtn');
+        const resetAbsBtn = document.getElementById('resetAbsoluteParentBtn');
+        const absCodeDisplay = document.getElementById('absolutePositionCode');
+        
+        let absTop = 20;
+        let absLeft = 20;
+
+        moveAbsBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.boxShadow = '0 6px 20px rgba(220, 53, 69, 0.6)';
+        });
+
+        moveAbsBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = '0 4px 15px rgba(220, 53, 69, 0.4)';
+        });
+
+        resetAbsBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+
+        resetAbsBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+
+        moveAbsBtn.addEventListener('click', function() {
+            absTop += 30;
+            absLeft += 50;
+            
+            absoluteParent.style.top = absTop + 'px';
+            absoluteParent.style.left = absLeft + 'px';
+            
+            updateAbsCodeDisplay();
+        });
+
+        resetAbsBtn.addEventListener('click', function() {
+            absTop = 20;
+            absLeft = 20;
+            
+            absoluteParent.style.top = '20px';
+            absoluteParent.style.left = '20px';
+            
+            updateAbsCodeDisplay();
+        });
+
+        function updateAbsCodeDisplay() {
+            absCodeDisplay.textContent = `.parent-absolute {
+    position: absolute;
+    top: ${absTop}px;
+    left: ${absLeft}px;
+}
+
+.child-absolute {
+    position: absolute;
+    top: 20px;    /* Still relative to parent! */
+    right: 20px;  /* Children move WITH parent */
+}`;
+        }
+    </script>
+</body>
+</html>

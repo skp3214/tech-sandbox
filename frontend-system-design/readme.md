@@ -6,6 +6,7 @@
 
 #### [Box Model](#box-model)
 #### [Browser Formatting Context](#browser-formatting-context-1)
+#### [Browser Positioning](#browser-positioning-1)
 
 ### Box Model
 
@@ -47,3 +48,9 @@
 ![alt text](image-5.png)
 
 ![alt text](image-6.png)
+
+
+### Browser Positioning
+![alt text](image-7.png)
+
+  - If you want to understand positioning in detail, run the [position-demo.html](/frontend-system-design/positioning-demo.html) 
