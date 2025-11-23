@@ -6,7 +6,8 @@
 - [2. Browser Formatting Context](#2-browser-formatting-context)
 - [3. Browser Positioning](#3-browser-positioning)
 - [4. Reflow and Rendering Pipeline](#4-reflow-and-rendering-pipeline)
-
+- [5. Composition Layers](#5-composition-layers)
+- [6. Browser Rendering Overview](#6-browser-rendering-overview)
 
 ---
 
@@ -494,7 +495,7 @@ element.addEventListener('animationend', () => {
 
 ---
 
-## Key Takeaway: CPU vs GPU
+### Key Takeaway: CPU vs GPU
 
 > 💡 **CPU handles logic and layout, GPU handles graphics.** 
 > 
@@ -502,3 +503,66 @@ element.addEventListener('animationend', () => {
 >
 > Creating GPU layers is powerful but uses memory - only promote animated elements to layers!
 
+## 6. Browser Rendering
+
+![alt text](image-11.png)
+
+### How Browsers Render Web Pages
+
+When you load a web page, the browser follows a specific sequence of steps to display content on screen:
+
+#### The Complete Flow
+
+```
+1. Parse HTML → DOM Tree
+   └─ Browser reads HTML and creates Document Object Model
+
+2. Parse CSS → CSSOM Tree
+   └─ Browser reads CSS and creates CSS Object Model
+
+3. Combine DOM + CSSOM → Render Tree
+   └─ Only visible elements (excludes display:none, <head>, etc.)
+
+4. Layout (Reflow)
+   └─ Calculate exact position and size of each element
+   └─ Box model calculations happen here
+
+5. Paint
+   └─ Fill in pixels: text, colors, images, shadows
+   └─ Creates layers for different parts of the page
+
+6. Composite
+   └─ Combine all layers in correct order
+   └─ Send to GPU → Display on screen
+```
+
+#### Critical Rendering Path
+
+The **Critical Rendering Path** is the sequence of steps to render the first pixels on screen:
+
+1. **HTML** → DOM
+2. **CSS** → CSSOM
+3. **DOM + CSSOM** → Render Tree
+4. **Layout** → Calculate geometry
+5. **Paint** → Rasterize pixels
+6. **Composite** → Display
+
+**Goal:** Minimize the time to first render (First Contentful Paint)
+
+#### Browser Rendering Engines
+
+| Browser | Rendering Engine | JavaScript Engine |
+|---------|------------------|-------------------|
+| Chrome | Blink | V8 |
+| Firefox | Gecko | SpiderMonkey |
+| Safari | WebKit | JavaScriptCore |
+| Edge | Blink | V8 |
+
+#### Key Performance Metrics
+
+- **FCP (First Contentful Paint)** - When first content appears
+- **LCP (Largest Contentful Paint)** - When main content is visible
+- **TTI (Time to Interactive)** - When page becomes interactive
+- **CLS (Cumulative Layout Shift)** - Visual stability measure
+
+---
