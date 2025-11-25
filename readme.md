@@ -5,3 +5,4 @@
 
 ### Language
 - [Programming with GoLang](/go-lang/readme.md)
+- [FastAPI Crash Course](/fast-api/readme.md)
