@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM API</title>
+</head>
+
+<body>
+    <div id="card" style="border: 2px solid black; padding: 20px;">
+        <h2>The Card Title</h2>
+    </div>
+    <script>
+        const card = document.getElementById('card');
+
+        // 1. beforebegin: Adds text ABOVE the border
+        card.insertAdjacentHTML(
+            'beforebegin',
+            '<p style="color: red;">[beforebegin] Warning: Important content below</p>'
+        );
+
+        // 2. afterbegin: Adds text INSIDE the border, at the TOP
+        card.insertAdjacentHTML(
+            'afterbegin',
+            '<p style="color: blue;">[afterbegin] This is pinned to the top of the card</p>'
+        );
+
+        // 3. beforeend: Adds text INSIDE the border, at the BOTTOM
+        card.insertAdjacentHTML(
+            'beforeend',
+            '<button>[beforeend] Click Me</button>'
+        );
+
+        // 4. afterend: Adds text BELOW the border
+        card.insertAdjacentHTML(
+            'afterend',
+            '<p style="color: green;">[afterend] Copyright 2025</p>'
+        );
+    </script>
+</body>
+
+</html>

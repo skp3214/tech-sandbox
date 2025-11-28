@@ -3,8 +3,9 @@
 ## Table of Contents
 
 - [1. DOM and Querying](#dom-and-querying)
+- [2. DOM Performance Best Practices](#dom-performance-best-practices)
 
-### [DOM and Querying]()
+### DOM and Querying
 
 The DOM API is a set of methods we can utilise in JavScript to manipulate the DOM.
 
@@ -27,4 +28,83 @@ The DOM API provides multiple methods for similar tasks because they serve diffe
 **Rule of Thumb**: Use `querySelector()`/`querySelectorAll()` for modern projects with complex selectors, and specific methods like `getElementById()` for simple, performance-critical operations.
 
 ![alt text](image-12.png)
+
+## [DOM Performance Best Practices]()
+
+### Performance Best Practices
+
+DOM manipulation is one of the most expensive operations in web performance. Follow these practices to optimize:
+
+**General Performance Tips:**
+- **Use IDs for Core Containers**: Always use `id` attributes for main containers and use `getElementById()` for fastest access
+- **Choose the Right Starting Point**: Start DOM queries from the closest parent container instead of `document` to reduce search scope
+- **Minimize DOM Access**: Cache DOM references instead of querying repeatedly
+- **Batch DOM Changes**: Group multiple DOM operations together to reduce reflows/repaints
+- **Use Document Fragments**: When adding multiple elements, create them in a DocumentFragment first, then append once
+- **Avoid Layout Thrashing**: Don't interleave reads and writes (e.g., reading `offsetHeight` then setting `style.height` in a loop)
+- **Defer Non-Critical Updates**: Use `requestAnimationFrame()` for visual updates or `setTimeout()` for non-urgent changes
+
+```javascript
+// ❌ Bad: Searching from document root every time
+const items = document.querySelectorAll('.item');
+
+// ✅ Good: Use ID for core container
+const container = document.getElementById('main-container'); // Fastest
+const items = container.querySelectorAll('.item'); // Reduced search scope
+
+// ✅ Good: Cache the container reference
+const sidebar = document.getElementById('sidebar');
+const sidebarItems = sidebar.querySelectorAll('.item');
+const sidebarButtons = sidebar.querySelectorAll('button');
+```
+
+### Adding/Removing Elements 
+
+![alt text](image-13.png)
+
+[Run the dom-api.html code to understand the adding new elements](/frontend-system-design/dom-api.html)
+
+**Adding Elements Efficiently:**
+```javascript
+// ❌ Bad: Multiple reflows
+for (let i = 0; i < 1000; i++) {
+    const div = document.createElement('div');
+    document.body.appendChild(div); // Triggers reflow each time
+}
+
+// ✅ Good: Single reflow using DocumentFragment
+const fragment = document.createDocumentFragment();
+for (let i = 0; i < 1000; i++) {
+    const div = document.createElement('div');
+    fragment.appendChild(div);
+}
+document.body.appendChild(fragment); // Single reflow
+
+// ✅ Good: Using insertAdjacentHTML for multiple elements
+const html = Array.from({length: 1000}, (_, i) => `<div>Item ${i}</div>`).join('');
+container.insertAdjacentHTML('beforeend', html);
+```
+
+**Removing Elements Efficiently:**
+```javascript
+// ❌ Bad: Removing elements one by one
+items.forEach(item => item.remove());
+
+// ✅ Good: Remove parent or use innerHTML
+container.innerHTML = ''; // Fast but loses event listeners
+
+// ✅ Better: Remove parent and replace
+const newContainer = container.cloneNode(false);
+container.parentNode.replaceChild(newContainer, container);
+
+// ✅ Good: Hide instead of remove (if reusing later)
+container.style.display = 'none';
+```
+
+**Key Takeaways:**
+- Use `DocumentFragment` for adding multiple elements
+- Batch operations to minimize reflows
+- Consider `insertAdjacentHTML` for large HTML insertions
+- Cache DOM references to avoid repeated queries
+- Hide elements instead of removing them if they'll be reused
 
