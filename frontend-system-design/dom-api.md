@@ -4,8 +4,9 @@
 
 - [1. DOM and Querying](#dom-and-querying)
 - [2. DOM Performance Best Practices](#dom-performance-best-practices)
+- [3. DOM Templates and DocumentFragment](#dom-template-and-documentfragment)
 
-### DOM and Querying
+## DOM and Querying
 
 The DOM API is a set of methods we can utilise in JavScript to manipulate the DOM.
 
@@ -14,7 +15,7 @@ The DOM API is a set of methods we can utilise in JavScript to manipulate the DO
 - Building a low-level library (e.g virtualisation, DOM management etc)
 - Creating Generic Component (like Video Player).
 
-### Why Different Methods Exist
+#### Why Different Methods Exist
 
 The DOM API provides multiple methods for similar tasks because they serve different purposes and use cases:
 
@@ -107,4 +108,79 @@ container.style.display = 'none';
 - Consider `insertAdjacentHTML` for large HTML insertions
 - Cache DOM references to avoid repeated queries
 - Hide elements instead of removing them if they'll be reused
+
+## DOM Template and DocumentFragment
+
+**`<template>` Element:**
+
+The `<template>` element is a mechanism for holding HTML that should not be rendered immediately when the page loads. It's useful for:
+- Storing reusable HTML structures
+- Cloning DOM structures without parsing HTML strings
+- Creating client-side templates that can be instantiated multiple times
+
+```html
+<!-- Define template in HTML -->
+<template id="user-card-template">
+  <div class="user-card">
+    <img class="avatar" src="" alt="">
+    <h3 class="name"></h3>
+    <p class="email"></p>
+  </div>
+</template>
+```
+
+```javascript
+// Use the template in JavaScript
+const template = document.getElementById('user-card-template');
+const clone = template.content.cloneNode(true); // Deep clone
+
+// Populate with data
+clone.querySelector('.avatar').src = user.avatar;
+clone.querySelector('.name').textContent = user.name;
+clone.querySelector('.email').textContent = user.email;
+
+// Add to DOM
+document.getElementById('users-container').appendChild(clone);
+```
+
+**`DocumentFragment`:**
+
+A `DocumentFragment` is a lightweight container for holding DOM nodes. It's not part of the active DOM tree, so changes to it don't trigger reflows/repaints until it's appended to the document.
+
+**Key Benefits:**
+- **Performance**: Changes made to a fragment don't cause reflows
+- **Batch Operations**: Collect multiple nodes before inserting them all at once
+- **Memory Efficient**: Minimal overhead compared to creating a real DOM element
+- **Clean Insertion**: When appended to DOM, only the children are inserted (not the fragment itself)
+
+```javascript
+// Creating multiple elements efficiently
+const fragment = document.createDocumentFragment();
+
+for (let i = 0; i < 1000; i++) {
+  const div = document.createElement('div');
+  div.textContent = `Item ${i}`;
+  div.className = 'list-item';
+  fragment.appendChild(div);
+}
+
+// Single DOM operation - much faster!
+container.appendChild(fragment);
+```
+
+**Template vs DocumentFragment:**
+
+| Feature | `<template>` | `DocumentFragment` |
+|---------|-------------|-------------------|
+| **Purpose** | Store reusable HTML | Batch DOM operations |
+| **Definition** | Defined in HTML | Created in JavaScript |
+| **Content** | Has `.content` property (which is a DocumentFragment) | Is the container itself |
+| **Reusability** | Can be cloned multiple times | Single-use (children move to DOM on append) |
+| **Use Case** | Component templates, repeated structures | Performance optimization for bulk inserts |
+
+**Best Practices:**
+- Use `<template>` when you have reusable HTML structures defined in your markup
+- Use `DocumentFragment` when dynamically creating many elements in JavaScript
+- Always clone `template.content` (it's a DocumentFragment) before modifying
+- Combine both: use template for structure, fragment for batch operations
 
