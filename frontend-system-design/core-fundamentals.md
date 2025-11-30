@@ -11,11 +11,11 @@
 
 ---
 
-## 1. Box Model
+## [1. Box Model]()
 
-![Box Model Diagram](image.png)
+![Box Model Diagram](screenshots/image.png)
 
-![Box Model Details](image-1.png)
+![Box Model Details](screenshots/image-1.png)
 
 ### 1.1 Box Size
 
@@ -39,43 +39,43 @@ There are several types of boxes:
 - The element is rendered from `top to bottom`
 - They participate in `Block Formatting Context (BFC)`
 
-![Block Level Example](image-2.png)
+![Block Level Example](screenshots/image-2.png)
 
 #### Inline Level
 - They render as a `string` flowing from left to right and from top to bottom
 - They participate in `Inline Formatting Context (IFC)`
 - They generate `inline-level boxes`
 
-![Inline Level Example](image-3.png)
+![Inline Level Example](screenshots/image-3.png)
 
 #### Anonymous Box
 - Boxes created by the browser automatically in certain situations
 
 ---
 
-## 2. Browser Formatting Context
+## [2. Browser Formatting Context]()
 
-![Browser Formatting Context](image-4.png)
+![Browser Formatting Context](screenshots/image-4.png)
 
-![Formatting Context Details](image-5.png)
+![Formatting Context Details](screenshots/image-5.png)
 
-![Formatting Context Examples](image-6.png)
+![Formatting Context Examples](screenshots/image-6.png)
 
 ---
 
-## 3. Browser Positioning
+## [3. Browser Positioning]()
 
-![Browser Positioning](image-7.png)
+![Browser Positioning](screenshots/image-7.png)
 
 > 💡 **Interactive Demo:** For a detailed understanding of positioning, run the [positioning-demo.html](positioning-demo.html) file
 
 ---
 
-## 4. Reflow and Rendering Pipeline
+## [4. Reflow and Rendering Pipeline]()
 
-![Reflow Overview](image-8.png)
+![Reflow Overview](screenshots/image-8.png)
 
-![Reflow Details](image-9.png)
+![Reflow Details](screenshots/image-9.png)
 
 ### 4.1 Browser Rendering Pipeline
 
@@ -277,9 +277,9 @@ element.style.top = '50px';
 
 ---
 
-## 5. Composition Layers
+## [5. Composition Layers]()
 
-![Composition Layers](image-10.png)
+![Composition Layers](screenshots/image-10.png)
 
 ### 5.1 What are Composition Layers?
 
@@ -503,9 +503,9 @@ element.addEventListener('animationend', () => {
 >
 > Creating GPU layers is powerful but uses memory - only promote animated elements to layers!
 
-## 6. Browser Rendering
+## [6. Browser Rendering]()
 
-![alt text](image-11.png)
+![alt text](screenshots/image-11.png)
 
 ### How Browsers Render Web Pages
 

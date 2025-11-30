@@ -6,7 +6,7 @@
 - [2. DOM Performance Best Practices](#dom-performance-best-practices)
 - [3. DOM Templates and DocumentFragment](#dom-template-and-documentfragment)
 
-## DOM and Querying
+## [DOM and Querying]()
 
 The DOM API is a set of methods we can utilise in JavScript to manipulate the DOM.
 
@@ -109,7 +109,7 @@ container.style.display = 'none';
 - Cache DOM references to avoid repeated queries
 - Hide elements instead of removing them if they'll be reused
 
-## DOM Template and DocumentFragment
+## [DOM Template and DocumentFragment]()
 
 **`<template>` Element:**
 
