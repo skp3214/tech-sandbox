@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intersection Observer - Parent Container Example</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .explanation {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .explanation h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .explanation p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .explanation code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #e74c3c;
+            font-family: 'Courier New', monospace;
+        }
+
+        .demo-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Parent Container (Scrollable) */
+        .parent-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .parent-container h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #95a5a6;
+        }
+
+        .scrollable-parent {
+            height: 400px;
+            overflow-y: scroll;
+            border: 3px solid #3498db;
+            border-radius: 8px;
+            padding: 20px;
+            background: #ecf0f1;
+            position: relative;
+        }
+
+        .scrollable-parent::before {
+            content: '👀 PARENT (ROOT)';
+            position: sticky;
+            top: 0;
+            display: block;
+            background: #3498db;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin: -20px -20px 20px -20px;
+            text-align: center;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        /* Child Elements */
+        .child-item {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 3px solid #95a5a6;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .child-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .child-item p {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .child-item.visible {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .child-item.visible::after {
+            content: '✓ VISIBLE';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .child-item.hidden::after {
+            content: '✗ HIDDEN';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        /* Stats Panel */
+        .stats-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: #555;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .log-container {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-left: 3px solid transparent;
+        }
+
+        .log-entry.visible {
+            border-left-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .log-entry.hidden {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .log-time {
+            color: #95a5a6;
+            font-size: 0.85em;
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        button.danger {
+            background: #e74c3c;
+        }
+
+        button.danger:hover {
+            background: #c0392b;
+        }
+
+        .code-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .code-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        .keyword { color: #e74c3c; }
+        .string { color: #f39c12; }
+        .comment { color: #95a5a6; }
+        .function { color: #3498db; }
+        .number { color: #9b59b6; }
+
+        @media (max-width: 768px) {
+            .demo-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1>🔍 Intersection Observer: Parent-Child Container Example</h1>
+
+        <div class="explanation">
+            <h2>Understanding Intersection Observer with Parent Containers</h2>
+            <p>
+                Instead of observing elements relative to the <strong>viewport</strong>, you can observe 
+                elements relative to a <strong>parent container</strong>. This is useful for:
+            </p>
+            <ul style="margin-left: 20px; color: #555; line-height: 1.8;">
+                <li>Lazy loading content inside scrollable divs/modals</li>
+                <li>Tracking visibility within carousels or sliders</li>
+                <li>Implementing infinite scroll in specific containers</li>
+                <li>Analytics tracking within specific sections</li>
+            </ul>
+            <p style="margin-top: 15px;">
+                <strong>Key:</strong> Set <code>root</code> option to the parent element instead of <code>null</code> (viewport).
+                The parent must be an <strong>ancestor</strong> of the observed elements and have <code>overflow</code> set.
+            </p>
+        </div>
+
+        <div class="demo-section">
+            <!-- Parent Container with Child Elements -->
+            <div class="parent-container">
+                <h3>
+                    <span class="status-indicator" id="containerIndicator"></span>
+                    Scrollable Parent Container
+                </h3>
+                <div class="scrollable-parent" id="scrollableParent">
+                    <div class="child-item" data-id="1">
+                        <h4>🎯 Child Element #1</h4>
+                        <p>This is the first child element. Scroll to see intersection changes within the parent container, not the viewport!</p>
+                    </div>
+                    <div class="child-item" data-id="2">
+                        <h4>🎯 Child Element #2</h4>
+                        <p>Observer tracks when this element enters or exits the parent's visible area.</p>
+                    </div>
+                    <div class="child-item" data-id="3">
+                        <h4>🎯 Child Element #3</h4>
+                        <p>The parent container acts as the "root" for intersection calculations.</p>
+                    </div>
+                    <div class="child-item" data-id="4">
+                        <h4>🎯 Child Element #4</h4>
+                        <p>You can set threshold and rootMargin just like viewport observations.</p>
+                    </div>
+                    <div class="child-item" data-id="5">
+                        <h4>🎯 Child Element #5</h4>
+                        <p>This works great for lazy loading images in scrollable galleries!</p>
+                    </div>
+                    <div class="child-item" data-id="6">
+                        <h4>🎯 Child Element #6</h4>
+                        <p>Perfect for tracking user engagement within specific sections.</p>
+                    </div>
+                    <div class="child-item" data-id="7">
+                        <h4>🎯 Child Element #7</h4>
+                        <p>The viewport position doesn't matter - only visibility within parent!</p>
+                    </div>
+                    <div class="child-item" data-id="8">
+                        <h4>🎯 Child Element #8</h4>
+                        <p>Last element - scroll back up to see others hide and show.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats and Logs -->
+            <div class="stats-panel">
+                <h3>📊 Real-time Statistics</h3>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="visibleCount">0</div>
+                        <div class="stat-label">Currently Visible</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="totalObservations">0</div>
+                        <div class="stat-label">Total Observations</div>
+                    </div>
+                </div>
+
+                <h3>📝 Activity Log</h3>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry">
+                        <span class="log-time">Waiting for scroll events...</span>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button onclick="scrollToTop()">⬆️ Scroll to Top</button>
+                    <button onclick="scrollToBottom()">⬇️ Scroll to Bottom</button>
+                </div>
+                <div class="controls">
+                    <button onclick="clearLogs()" class="danger">🗑️ Clear Logs</button>
+                    <button onclick="location.reload()">🔄 Reset Demo</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="code-section">
+            <h3>💻 Code Implementation</h3>
+            <pre><code><span class="comment">// 1. Get the parent container element</span>
+<span class="keyword">const</span> parentContainer = document.<span class="function">getElementById</span>(<span class="string">'scrollableParent'</span>);
+
+<span class="comment">// 2. Create Intersection Observer with parent as root</span>
+<span class="keyword">const</span> observer = <span class="keyword">new</span> <span class="function">IntersectionObserver</span>((entries) => {
+    entries.<span class="function">forEach</span>(entry => {
+        <span class="keyword">if</span> (entry.isIntersecting) {
+            <span class="comment">// Element entered parent's visible area</span>
+            entry.target.classList.<span class="function">add</span>(<span class="string">'visible'</span>);
+            console.<span class="function">log</span>(<span class="string">'Element visible in parent:'</span>, entry.target);
+        } <span class="keyword">else</span> {
+            <span class="comment">// Element exited parent's visible area</span>
+            entry.target.classList.<span class="function">remove</span>(<span class="string">'visible'</span>);
+            console.<span class="function">log</span>(<span class="string">'Element hidden from parent:'</span>, entry.target);
+        }
+    });
+}, {
+    <span class="comment">// ⭐ KEY: Set root to parent container (not null/viewport)</span>
+    <span class="keyword">root</span>: parentContainer,
+    
+    <span class="comment">// Optional: Margin around parent's intersection area</span>
+    <span class="keyword">rootMargin</span>: <span class="string">'0px'</span>,
+    
+    <span class="comment">// Optional: Trigger when 10% of element is visible</span>
+    <span class="keyword">threshold</span>: <span class="number">0.1</span>
+});
+
+<span class="comment">// 3. Observe all child elements</span>
+<span class="keyword">const</span> childElements = document.<span class="function">querySelectorAll</span>(<span class="string">'.child-item'</span>);
+childElements.<span class="function">forEach</span>(child => {
+    observer.<span class="function">observe</span>(child);
+});
+
+<span class="comment">// 4. Don't forget to clean up!</span>
+window.<span class="function">addEventListener</span>(<span class="string">'beforeunload'</span>, () => {
+    observer.<span class="function">disconnect</span>();
+});</code></pre>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const parentContainer = document.getElementById('scrollableParent');
+        const childElements = document.querySelectorAll('.child-item');
+        const logContainer = document.getElementById('logContainer');
+        const visibleCountEl = document.getElementById('visibleCount');
+        const totalObservationsEl = document.getElementById('totalObservations');
+        const containerIndicator = document.getElementById('containerIndicator');
+
+        // State
+        let visibleCount = 0;
+        let totalObservations = 0;
+        const visibleElements = new Set();
+
+        // Create Intersection Observer with PARENT as root
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                totalObservations++;
+                const childId = entry.target.dataset.id;
+                const timestamp = new Date().toLocaleTimeString();
+
+                if (entry.isIntersecting) {
+                    // Element entered parent's visible area
+                    entry.target.classList.add('visible');
+                    entry.target.classList.remove('hidden');
+                    visibleElements.add(childId);
+                    
+                    addLog(
+                        `[${timestamp}] Child #${childId} ENTERED parent container (${Math.round(entry.intersectionRatio * 100)}% visible)`,
+                        'visible'
+                    );
+                } else {
+                    // Element exited parent's visible area
+                    entry.target.classList.remove('visible');
+                    entry.target.classList.add('hidden');
+                    visibleElements.delete(childId);
+                    
+                    addLog(
+                        `[${timestamp}] Child #${childId} EXITED parent container`,
+                        'hidden'
+                    );
+                }
+
+                // Update stats
+                visibleCount = visibleElements.size;
+                visibleCountEl.textContent = visibleCount;
+                totalObservationsEl.textContent = totalObservations;
+
+                // Update container indicator
+                if (visibleCount > 0) {
+                    containerIndicator.style.background = '#27ae60';
+                } else {
+                    containerIndicator.style.background = '#95a5a6';
+                }
+
+                // Log detailed info to console
+                console.log('Intersection Event:', {
+                    element: `Child #${childId}`,
+                    isIntersecting: entry.isIntersecting,
+                    intersectionRatio: entry.intersectionRatio,
+                    boundingClientRect: entry.boundingClientRect,
+                    rootBounds: entry.rootBounds,
+                    time: timestamp
+                });
+            });
+        }, {
+            // ⭐ IMPORTANT: Set root to the parent container
+            root: parentContainer,
+            
+            // Optional: Add margin around the intersection area
+            rootMargin: '0px',
+            
+            // Trigger when at least 10% of element is visible in parent
+            threshold: 0.1
+        });
+
+        // Observe all child elements
+        childElements.forEach(child => {
+            observer.observe(child);
+        });
+
+        // Helper function to add log entries
+        function addLog(message, type = '') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = message;
+            logContainer.insertBefore(logEntry, logContainer.firstChild);
+
+            // Keep only last 20 logs
+            while (logContainer.children.length > 20) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        // Scroll controls
+        function scrollToTop() {
+            parentContainer.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function scrollToBottom() {
+            parentContainer.scrollTo({
+                top: parentContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        function clearLogs() {
+            logContainer.innerHTML = '<div class="log-entry"><span class="log-time">Logs cleared...</span></div>';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            observer.disconnect();
+        });
+
+        // Initial log
+        addLog('🚀 Intersection Observer initialized with parent container as root', '');
+        
+        // Console explanation
+        console.log(`
+%c🎓 PARENT-CHILD INTERSECTION OBSERVER EXPLAINED
+
+%c📌 Key Differences from Viewport Observer:
+
+1. ROOT ELEMENT:
+   root: parentContainer  ← Parent div instead of null (viewport)
+
+2. OBSERVATION CONTEXT:
+   - Elements are tracked relative to PARENT's scroll area
+   - Viewport position doesn't affect intersection
+   - Parent must have overflow: scroll/auto
+
+3. USE CASES:
+   ✓ Lazy loading in scrollable modals/dialogs
+   ✓ Infinite scroll within specific containers
+   ✓ Tracking visibility in carousels
+   ✓ Analytics for content sections
+   ✓ Dynamic loading in split-pane layouts
+
+4. REQUIREMENTS:
+   - Parent must be an ancestor of observed elements
+   - Parent needs overflow property set
+   - Works exactly like viewport observer otherwise
+
+%c🔧 Try scrolling the parent container and watch the logs!
+        `,
+        'color: #3498db; font-size: 16px; font-weight: bold;',
+        'color: #2ecc71; font-weight: bold;',
+        'color: #f39c12; font-style: italic;'
+        );
+    </script>
+</body>
+</html>
