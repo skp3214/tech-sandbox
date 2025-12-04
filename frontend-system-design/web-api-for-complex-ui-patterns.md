@@ -3,6 +3,8 @@
 ## Table of Contents
 
 - [1. Observer API](#observer-api)
+  - [1.1. Intersection Observer API](#1-intersection-observer-api)
+  - [1.2. Mutation Observer API](#2-mutation-observer-api)
 
 ## [Observer API]()
 
@@ -50,3 +52,47 @@ images.forEach(img => observer.observe(img));
 - `root`: Element used as viewport (default: browser viewport)
 - `rootMargin`: Margin around root (like CSS margin)
 - `threshold`: Percentage of visibility to trigger callback (0 to 1)
+
+#### [2. **Mutation Observer API**]()
+
+Watches for changes to the DOM tree (additions, removals, attribute changes).
+
+**Use Cases:**
+- Detecting dynamic content changes
+- Third-party script integration
+- Form validation on DOM changes
+- Tracking user-generated content
+- Debugging DOM modifications
+
+**Basic Usage:**
+```javascript
+const mutationObserver = new MutationObserver((mutations) => {
+  mutations.forEach(mutation => {
+    if (mutation.type === 'childList') {
+      console.log('Nodes added or removed');
+      mutation.addedNodes.forEach(node => {
+        console.log('Added:', node);
+      });
+    } else if (mutation.type === 'attributes') {
+      console.log(`Attribute ${mutation.attributeName} changed`);
+    }
+  });
+});
+
+mutationObserver.observe(document.querySelector('#container'), {
+  childList: true,      // Watch for child additions/removals
+  attributes: true,     // Watch for attribute changes
+  subtree: true,        // Watch descendants too
+  characterData: true,  // Watch text content changes
+  attributeFilter:['one','two'],
+  attributeOldValue: true,  // Record old attribute values
+  characterDataOldValue: true  // Record old text values
+});
+```
+
+**Configuration Options:**
+- `childList`: Watch for child node changes
+- `attributes`: Watch for attribute changes
+- `characterData`: Watch for text content changes
+- `subtree`: Apply to entire subtree
+- `attributeFilter`: Array of specific attributes to watch
