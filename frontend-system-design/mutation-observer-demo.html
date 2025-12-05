@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutation Observer API Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .info-panel p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-panel code {
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #e74c3c;
+            font-family: 'Courier New', monospace;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .demo-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .demo-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Target Container */
+        #targetContainer {
+            min-height: 200px;
+            border: 3px dashed #3498db;
+            border-radius: 8px;
+            padding: 20px;
+            background: #ecf0f1;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #targetContainer::before {
+            content: '👀 OBSERVED CONTAINER';
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .target-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .target-item.highlighted {
+            background: #fff3cd;
+            border-left-color: #f39c12;
+        }
+
+        /* Control Buttons */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button.danger {
+            background: #e74c3c;
+        }
+
+        button.danger:hover {
+            background: #c0392b;
+        }
+
+        button.success {
+            background: #27ae60;
+        }
+
+        button.success:hover {
+            background: #229954;
+        }
+
+        button.warning {
+            background: #f39c12;
+        }
+
+        button.warning:hover {
+            background: #e67e22;
+        }
+
+        /* Stats Panel */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: #555;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Mutation Log */
+        .log-container {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-left: 4px solid transparent;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .log-entry.childList {
+            border-left-color: #3498db;
+        }
+
+        .log-entry.attributes {
+            border-left-color: #f39c12;
+        }
+
+        .log-entry.characterData {
+            border-left-color: #9b59b6;
+        }
+
+        .log-timestamp {
+            color: #95a5a6;
+            font-size: 0.85em;
+        }
+
+        .log-type {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .log-type.childList {
+            background: #3498db;
+            color: white;
+        }
+
+        .log-type.attributes {
+            background: #f39c12;
+            color: white;
+        }
+
+        .log-type.characterData {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .log-details {
+            margin-top: 5px;
+            padding-left: 10px;
+            color: #bdc3c7;
+        }
+
+        /* Code Section */
+        .code-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-top: 25px;
+        }
+
+        .code-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        .keyword { color: #e74c3c; }
+        .string { color: #f39c12; }
+        .comment { color: #95a5a6; }
+        .function { color: #3498db; }
+        .number { color: #9b59b6; }
+
+        @media (max-width: 968px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Mutation Observer API Demo</h1>
+
+        <div class="info-panel">
+            <h2>What is Mutation Observer?</h2>
+            <p>
+                The <strong>Mutation Observer API</strong> provides a way to watch for changes being made to the DOM tree. 
+                It can observe additions/removals of nodes, attribute changes, and text content modifications.
+            </p>
+            <p>
+                <strong>Why use it?</strong> Much more efficient than deprecated mutation events. Perfect for:
+                detecting dynamic content changes, third-party script integration, form validation, debugging, and tracking user-generated content.
+            </p>
+            <p>
+                <strong>Key Features:</strong> <code>childList</code> (node additions/removals), 
+                <code>attributes</code> (attribute changes), <code>characterData</code> (text changes), 
+                <code>subtree</code> (observe descendants), and <code>attributeFilter</code> (specific attributes).
+            </p>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Interactive Controls -->
+            <div class="demo-section">
+                <h3>
+                    <span class="status-dot"></span>
+                    Interactive Controls
+                </h3>
+
+                <div id="targetContainer">
+                    <div class="target-item" id="item1">Item 1 - Original content</div>
+                    <div class="target-item" id="item2">Item 2 - Click buttons to see mutations</div>
+                </div>
+
+                <div class="controls">
+                    <button onclick="addChild()" class="success">
+                        ➕ Add Child
+                    </button>
+                    <button onclick="removeLastChild()" class="danger">
+                        ➖ Remove Child
+                    </button>
+                    <button onclick="modifyAttribute()" class="warning">
+                        🎨 Change Attribute
+                    </button>
+                    <button onclick="modifyText()" class="warning">
+                        ✏️ Change Text
+                    </button>
+                    <button onclick="addMultiple()">
+                        📦 Add Multiple
+                    </button>
+                    <button onclick="replaceContent()">
+                        🔄 Replace Content
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="childListCount">0</div>
+                        <div class="stat-label">Child Changes</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="attributeCount">0</div>
+                        <div class="stat-label">Attribute Changes</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="characterCount">0</div>
+                        <div class="stat-label">Text Changes</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mutation Log -->
+            <div class="demo-section">
+                <h3>📝 Mutation Log</h3>
+                <div class="log-container" id="mutationLog">
+                    <div class="log-entry">
+                        <span class="log-timestamp">Waiting for mutations...</span>
+                    </div>
+                </div>
+                <div class="controls" style="margin-top: 15px;">
+                    <button onclick="clearLog()" class="danger">
+                        🗑️ Clear Log
+                    </button>
+                    <button onclick="location.reload()">
+                        🔄 Reset Demo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="code-section">
+            <h3>💻 Code Implementation</h3>
+            <pre><code><span class="comment">// Select the target node to observe</span>
+<span class="keyword">const</span> targetContainer = document.<span class="function">getElementById</span>(<span class="string">'targetContainer'</span>);
+
+<span class="comment">// Create a Mutation Observer instance</span>
+<span class="keyword">const</span> observer = <span class="keyword">new</span> <span class="function">MutationObserver</span>((mutations) => {
+    <span class="comment">// Callback fires when mutations are observed</span>
+    mutations.<span class="function">forEach</span>(mutation => {
+        <span class="keyword">switch</span> (mutation.type) {
+            <span class="keyword">case</span> <span class="string">'childList'</span>:
+                <span class="comment">// Child nodes were added or removed</span>
+                console.<span class="function">log</span>(<span class="string">'Added nodes:'</span>, mutation.addedNodes);
+                console.<span class="function">log</span>(<span class="string">'Removed nodes:'</span>, mutation.removedNodes);
+                <span class="keyword">break</span>;
+                
+            <span class="keyword">case</span> <span class="string">'attributes'</span>:
+                <span class="comment">// An attribute was modified</span>
+                console.<span class="function">log</span>(<span class="string">'Attribute changed:'</span>, mutation.attributeName);
+                console.<span class="function">log</span>(<span class="string">'Old value:'</span>, mutation.oldValue);
+                <span class="keyword">break</span>;
+                
+            <span class="keyword">case</span> <span class="string">'characterData'</span>:
+                <span class="comment">// Text content was modified</span>
+                console.<span class="function">log</span>(<span class="string">'Text changed from:'</span>, mutation.oldValue);
+                console.<span class="function">log</span>(<span class="string">'To:'</span>, mutation.target.textContent);
+                <span class="keyword">break</span>;
+        }
+    });
+});
+
+<span class="comment">// Configuration: what to observe</span>
+<span class="keyword">const</span> config = {
+    <span class="keyword">childList</span>: <span class="keyword">true</span>,              <span class="comment">// Watch for child additions/removals</span>
+    <span class="keyword">attributes</span>: <span class="keyword">true</span>,            <span class="comment">// Watch for attribute changes</span>
+    <span class="keyword">characterData</span>: <span class="keyword">true</span>,         <span class="comment">// Watch for text content changes</span>
+    <span class="keyword">subtree</span>: <span class="keyword">true</span>,               <span class="comment">// Observe all descendants</span>
+    <span class="keyword">attributeOldValue</span>: <span class="keyword">true</span>,     <span class="comment">// Record old attribute values</span>
+    <span class="keyword">characterDataOldValue</span>: <span class="keyword">true</span>, <span class="comment">// Record old text values</span>
+    <span class="keyword">attributeFilter</span>: [<span class="string">'class'</span>, <span class="string">'style'</span>, <span class="string">'data-status'</span>] <span class="comment">// Only these attributes</span>
+};
+
+<span class="comment">// Start observing</span>
+observer.<span class="function">observe</span>(targetContainer, config);
+
+<span class="comment">// Later: stop observing</span>
+observer.<span class="function">disconnect</span>();
+
+<span class="comment">// Resume observing with same config</span>
+observer.<span class="function">observe</span>(targetContainer, config);</code></pre>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let childCount = 0;
+        let childListCount = 0;
+        let attributeCount = 0;
+        let characterCount = 0;
+        let itemCounter = 3;
+
+        // DOM Elements
+        const targetContainer = document.getElementById('targetContainer');
+        const mutationLog = document.getElementById('mutationLog');
+        const childListCountEl = document.getElementById('childListCount');
+        const attributeCountEl = document.getElementById('attributeCount');
+        const characterCountEl = document.getElementById('characterCount');
+
+        // Create Mutation Observer
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                const timestamp = new Date().toLocaleTimeString();
+                
+                switch (mutation.type) {
+                    case 'childList':
+                        childListCount++;
+                        childListCountEl.textContent = childListCount;
+                        
+                        if (mutation.addedNodes.length > 0) {
+                            mutation.addedNodes.forEach(node => {
+                                if (node.nodeType === 1) { // Element node
+                                    addLogEntry(
+                                        'childList',
+                                        timestamp,
+                                        `Added node: ${node.tagName} (${node.className || 'no class'})`,
+                                        `Total children: ${targetContainer.children.length}`
+                                    );
+                                }
+                            });
+                        }
+                        
+                        if (mutation.removedNodes.length > 0) {
+                            mutation.removedNodes.forEach(node => {
+                                if (node.nodeType === 1) {
+                                    addLogEntry(
+                                        'childList',
+                                        timestamp,
+                                        `Removed node: ${node.tagName} (${node.className || 'no class'})`,
+                                        `Total children: ${targetContainer.children.length}`
+                                    );
+                                }
+                            });
+                        }
+                        break;
+                        
+                    case 'attributes':
+                        attributeCount++;
+                        attributeCountEl.textContent = attributeCount;
+                        
+                        addLogEntry(
+                            'attributes',
+                            timestamp,
+                            `Attribute "${mutation.attributeName}" changed on ${mutation.target.tagName}`,
+                            `Old: "${mutation.oldValue}" → New: "${mutation.target.getAttribute(mutation.attributeName)}"`
+                        );
+                        break;
+                        
+                    case 'characterData':
+                        characterCount++;
+                        characterCountEl.textContent = characterCount;
+                        
+                        addLogEntry(
+                            'characterData',
+                            timestamp,
+                            `Text content changed`,
+                            `Old: "${mutation.oldValue}" → New: "${mutation.target.textContent}"`
+                        );
+                        break;
+                }
+
+                // Console logging for debugging
+                console.log('Mutation detected:', {
+                    type: mutation.type,
+                    target: mutation.target,
+                    attributeName: mutation.attributeName,
+                    oldValue: mutation.oldValue,
+                    addedNodes: mutation.addedNodes,
+                    removedNodes: mutation.removedNodes
+                });
+            });
+        });
+
+        // Observer configuration
+        const config = {
+            childList: true,              // Watch for child additions/removals
+            attributes: true,             // Watch for attribute changes
+            characterData: true,          // Watch for text content changes
+            subtree: true,                // Observe all descendants
+            attributeOldValue: true,      // Record previous attribute values
+            characterDataOldValue: true,  // Record previous text values
+            attributeFilter: ['class', 'style', 'data-status'] // Only watch these attributes
+        };
+
+        // Start observing
+        observer.observe(targetContainer, config);
+
+        // Helper function to add log entries
+        function addLogEntry(type, timestamp, message, details) {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `
+                <div>
+                    <span class="log-type ${type}">${type.toUpperCase()}</span>
+                    <span class="log-timestamp">${timestamp}</span>
+                </div>
+                <div style="margin-top: 5px;">${message}</div>
+                <div class="log-details">${details}</div>
+            `;
+            mutationLog.insertBefore(entry, mutationLog.firstChild);
+
+            // Keep only last 50 entries
+            while (mutationLog.children.length > 50) {
+                mutationLog.removeChild(mutationLog.lastChild);
+            }
+
+            // Auto scroll to top
+            mutationLog.scrollTop = 0;
+        }
+
+        // Interactive Functions
+        function addChild() {
+            const newItem = document.createElement('div');
+            newItem.className = 'target-item';
+            newItem.id = `item${itemCounter}`;
+            newItem.textContent = `Item ${itemCounter} - Newly added element`;
+            targetContainer.appendChild(newItem);
+            itemCounter++;
+        }
+
+        function removeLastChild() {
+            const children = targetContainer.querySelectorAll('.target-item');
+            console.log('Found children:', children.length);
+            
+            if (children.length > 0) {
+                const lastChild = children[children.length - 1];
+                console.log('Removing:', lastChild);
+                lastChild.remove();
+            } else {
+                alert('No more items to remove!');
+            }
+        }
+
+        function modifyAttribute() {
+            const items = targetContainer.querySelectorAll('.target-item');
+            if (items.length > 0) {
+                const randomItem = items[Math.floor(Math.random() * items.length)];
+                randomItem.classList.toggle('highlighted');
+                randomItem.setAttribute('data-status', 
+                    randomItem.hasAttribute('data-status') ? 'modified' : 'highlighted'
+                );
+            }
+        }
+
+        function modifyText() {
+            const items = targetContainer.querySelectorAll('.target-item');
+            if (items.length > 0) {
+                const randomItem = items[Math.floor(Math.random() * items.length)];
+                randomItem.childNodes[0].textContent = `Updated at ${new Date().toLocaleTimeString()}`;
+            }
+        }
+
+        function addMultiple() {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => addChild(), i * 200);
+            }
+        }
+
+        function replaceContent() {
+            const newItem = document.createElement('div');
+            newItem.className = 'target-item';
+            newItem.textContent = 'Replacement content created at ' + new Date().toLocaleTimeString();
+            
+            const items = targetContainer.querySelectorAll('.target-item');
+            if (items.length > 0) {
+                const randomItem = items[Math.floor(Math.random() * items.length)];
+                targetContainer.replaceChild(newItem, randomItem);
+            }
+        }
+
+        function clearLog() {
+            mutationLog.innerHTML = '<div class="log-entry"><span class="log-timestamp">Log cleared...</span></div>';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            observer.disconnect();
+        });
+
+        // Console explanation
+        console.log(`
+%c🎓 MUTATION OBSERVER EXPLAINED
+
+%c📌 What it observes:
+
+1. CHILDLIST (Node Changes):
+   ✓ Elements added to DOM
+   ✓ Elements removed from DOM
+   ✓ Node replacements
+
+2. ATTRIBUTES (Attribute Changes):
+   ✓ Class modifications
+   ✓ Style changes
+   ✓ Data attributes
+   ✓ Any HTML attribute
+
+3. CHARACTERDATA (Text Changes):
+   ✓ Text node content modifications
+   ✓ Direct text updates
+
+%c🔧 Configuration Options:
+
+• childList: Watch for child additions/removals
+• attributes: Watch for attribute changes
+• characterData: Watch for text changes
+• subtree: Apply to all descendants (not just direct children)
+• attributeOldValue: Record previous attribute values
+• characterDataOldValue: Record previous text values
+• attributeFilter: Array of specific attributes to watch
+
+%c💡 Try the interactive controls and watch the console + log panel!
+        `,
+        'color: #667eea; font-size: 16px; font-weight: bold;',
+        'color: #27ae60; font-weight: bold;',
+        'color: #f39c12; font-weight: bold;',
+        'color: #e74c3c; font-style: italic;'
+        );
+    </script>
+</body>
+</html>

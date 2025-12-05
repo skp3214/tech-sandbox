@@ -53,7 +53,7 @@ images.forEach(img => observer.observe(img));
 - `rootMargin`: Margin around root (like CSS margin)
 - `threshold`: Percentage of visibility to trigger callback (0 to 1)
 
-#### [2. **Mutation Observer API**]()
+#### [2. **Mutation Observer API**](/mutation-observer-demo.html)
 
 Watches for changes to the DOM tree (additions, removals, attribute changes).
 
