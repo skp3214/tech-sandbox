@@ -5,6 +5,7 @@
 - [1. Observer API](#observer-api)
   - [1.1. Intersection Observer API](#1-intersection-observer-api)
   - [1.2. Mutation Observer API](#2-mutation-observer-api)
+  - [1.3. Resize Observer API](#3-resize-observer-api)
 
 ## [Observer API]()
 
@@ -96,3 +97,42 @@ mutationObserver.observe(document.querySelector('#container'), {
 - `characterData`: Watch for text content changes
 - `subtree`: Apply to entire subtree
 - `attributeFilter`: Array of specific attributes to watch
+
+#### [3. **Resize Observer API**](/resize-observer-demo.html)
+
+Monitors changes to element dimensions (width, height) without relying on window resize events.
+
+**Use Cases:**
+- Responsive component layouts
+- Dynamic chart/graph resizing
+- Textarea auto-resize
+- Container query-like behavior
+- Adjusting content based on element size changes
+
+**Basic Usage:**
+```javascript
+const resizeObserver = new ResizeObserver((entries) => {
+  entries.forEach(entry => {
+    const { width, height } = entry.contentRect;
+    console.log(`Element resized to ${width}x${height}`);
+    
+    // Adjust layout based on size
+    if (width < 500) {
+      entry.target.classList.add('compact');
+    } else {
+      entry.target.classList.remove('compact');
+    }
+  });
+});
+
+// Observe element
+const container = document.querySelector('#responsive-container');
+resizeObserver.observe(container);
+```
+
+**Key Properties:**
+- `contentRect`: Element's dimensions (width, height, top, left)
+- `borderBoxSize`: Size including padding and border
+- `contentBoxSize`: Size of content box only
+- `devicePixelContentBoxSize`: Size in device pixels
+

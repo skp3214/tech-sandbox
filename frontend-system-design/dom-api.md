@@ -28,7 +28,7 @@ The DOM API provides multiple methods for similar tasks because they serve diffe
 
 **Rule of Thumb**: Use `querySelector()`/`querySelectorAll()` for modern projects with complex selectors, and specific methods like `getElementById()` for simple, performance-critical operations.
 
-![alt text](/screenshots/image-12.png)
+![alt text](screenshots/image-12.png)
 
 ## [DOM Performance Best Practices]()
 
