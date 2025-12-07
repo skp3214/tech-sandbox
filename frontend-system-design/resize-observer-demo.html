@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resize Observer Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            resize: both;
+            overflow: auto;
+            min-width: 200px;
+            min-height: 150px;
+            max-width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .container.compact {
+            background-color: #fff3cd;
+        }
+
+        .container.medium {
+            background-color: #d1ecf1;
+        }
+
+        .container.large {
+            background-color: #d4edda;
+        }
+
+        .info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .badge.compact {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .badge.medium {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .badge.large {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resize Observer API Demo</h1>
+    
+    <div class="instructions">
+        <strong>Instructions:</strong> Drag the bottom-right corner of the box below to resize it. 
+        Watch how the background color changes based on the width!
+    </div>
+
+    <div id="resizable-container" class="container">
+        <h2>Resizable Container <span id="size-badge" class="badge">Drag to resize</span></h2>
+        <p>This container is resizable. Try dragging the corner to see the Resize Observer in action!</p>
+        <div id="dimensions-info" class="info">
+            Width: <span id="width">-</span>px<br>
+            Height: <span id="height">-</span>px<br>
+            Size Category: <span id="category">-</span>
+        </div>
+    </div>
+
+    <div id="log"></div>
+
+    <script>
+        const container = document.getElementById('resizable-container');
+        const widthSpan = document.getElementById('width');
+        const heightSpan = document.getElementById('height');
+        const categorySpan = document.getElementById('category');
+        const badge = document.getElementById('size-badge');
+        const log = document.getElementById('log');
+
+        let resizeCount = 0;
+
+        // Create Resize Observer
+        const resizeObserver = new ResizeObserver((entries) => {
+            entries.forEach(entry => {
+                // Use entry.target to access the element
+                const target = entry.target;
+                
+                // Use borderBoxSize for dimensions (includes padding and border)
+                const borderBoxSize = entry.borderBoxSize[0];
+                const width = borderBoxSize.inlineSize;
+                const height = borderBoxSize.blockSize;
+                
+                resizeCount++;
+
+                // Update dimensions display
+                widthSpan.textContent = Math.round(width);
+                heightSpan.textContent = Math.round(height);
+
+                // Remove all size classes from target
+                target.classList.remove('compact', 'medium', 'large');
+                badge.classList.remove('compact', 'medium', 'large');
+
+                // Apply class based on width
+                let category = '';
+                if (width < 300) {
+                    category = 'compact';
+                    target.classList.add('compact');
+                    badge.classList.add('compact');
+                    badge.textContent = '📱 Compact';
+                } else if (width < 600) {
+                    category = 'medium';
+                    target.classList.add('medium');
+                    badge.classList.add('medium');
+                    badge.textContent = '💻 Medium';
+                } else {
+                    category = 'large';
+                    target.classList.add('large');
+                    badge.classList.add('large');
+                    badge.textContent = '🖥️ Large';
+                }
+
+                categorySpan.textContent = category.toUpperCase();
+
+                // Log resize event
+                console.log(`Resize #${resizeCount}: ${Math.round(width)}x${Math.round(height)} - ${category}`);
+            });
+        });
+
+        // Start observing
+        resizeObserver.observe(container);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            resizeObserver.disconnect();
+        });
+    </script>
+</body>
+</html>
