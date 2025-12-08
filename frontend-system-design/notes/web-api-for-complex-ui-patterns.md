@@ -14,7 +14,7 @@
 
 The Observer APIs are a collection of modern browser APIs that allow you to efficiently observe changes to DOM elements and the viewport. These APIs are essential for building performant, complex UI patterns without relying on expensive polling or scroll event listeners.
 
-![alt text](screenshots/image-14.png)
+![alt text](../screenshots/image-14.png)
 
 ### Key Observer APIs
 
