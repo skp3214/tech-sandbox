@@ -7,3 +7,5 @@
 - ### [2. DOM API](/frontend-system-design/notes/dom-api.md)
 
 - ### [3. Web APIs for Complex UI Patterns](/frontend-system-design/notes/web-api-for-complex-ui-patterns.md)
+
+- ### [4. Virtualization](/frontend-system-design/notes/virtualization.md)

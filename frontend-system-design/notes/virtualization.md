@@ -32,3 +32,4 @@ Virtualization is a performance optimization technique that renders only the vis
 - `react-window` / `react-virtualized` (React)
 - `@tanstack/virtual` (Framework agnostic)
 
+### [Infinite Scroll with Virtualization Code Example](/code/infinite-scroll-with-virtualization.html)
