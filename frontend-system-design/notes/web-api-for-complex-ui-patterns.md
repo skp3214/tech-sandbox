@@ -1,4 +1,4 @@
-## Web APIs for Complex UI Patterns
+# Web APIs for Complex UI Patterns
 
 ## Table of Contents
 

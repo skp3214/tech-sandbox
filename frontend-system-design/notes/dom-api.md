@@ -1,4 +1,4 @@
-## DOM API
+# DOM API
 
 ## Table of Contents
 
