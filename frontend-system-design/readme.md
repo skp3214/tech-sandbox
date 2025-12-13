@@ -9,3 +9,5 @@
 - ### [3. Web APIs for Complex UI Patterns](/frontend-system-design/notes/web-api-for-complex-ui-patterns.md)
 
 - ### [4. Virtualization](/frontend-system-design/notes/virtualization.md)
+
+- ### [5. Application State and Network Connectivity](/frontend-system-design/notes/application-state-network-connectivity.md)
