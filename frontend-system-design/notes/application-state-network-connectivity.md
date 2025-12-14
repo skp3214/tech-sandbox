@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [1. Application State Design](#1-application-state-design)
+- [2. Network Connectivity](#2-network-connectivity)
 
 
 
@@ -44,3 +45,45 @@ Three fundamental principles guide efficient state design:
 - **Implement data pruning:** Remove stale or unused data periodically
 
 `Click Here` - [Memory Management](/frontend-system-design/notes/memory-browser.md)
+
+## [2. Network Connectivity]()
+
+### Transport Protocols: TCP vs UDP
+
+[**TCP (Transmission Control Protocol):**]()
+- Connection-oriented, reliable delivery
+- Guarantees packet order and delivery
+- Higher overhead due to acknowledgments
+- Used by: HTTP, WebSockets
+- Best for: Data integrity matters (web pages, APIs)
+
+[**UDP (User Datagram Protocol):**]()
+- Connectionless, no delivery guarantee
+- Faster with lower latency
+- No packet order guarantee
+- Used by: WebRTC, live streaming
+- Best for: Speed matters more than reliability (video calls, gaming)
+
+### [Long Polling: Problems and Limitations]()
+
+**How It Works:**
+Client sends HTTP request → Server holds connection open → Server responds when data available → Client immediately sends new request
+
+**Problems:**
+
+[**1. High Latency:**]()
+- Request/response cycle delay (100-500ms overhead)
+- Connection establishment time for each request
+- Server processing time adds up
+- Not suitable for real-time applications
+
+[**2. Energy Consumption:**]()
+- Constant HTTP requests drain mobile battery
+- Keeps radio awake continuously on mobile devices
+- CPU cycles wasted on frequent connections
+- Network interface stays active
+
+**Better Alternatives:**
+- **WebSockets:** Full-duplex, persistent connection, low latency
+- **Server-Sent Events (SSE):** Unidirectional, simple, efficient for server-to-client
+- **WebRTC:** Peer-to-peer, ultra-low latency for real-time communication
