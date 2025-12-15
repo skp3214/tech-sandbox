@@ -4,6 +4,7 @@
 
 - [1. Performance Optimization](#1-performance-optimization)
 - [2. JavaScript Bundling and Loading](#2-javascript-bundling-and-loading)
+- [3. CSS, Images and Rendering](#3-css-image-and-rendering)
 
 ## [1. Performance Optimization]()
 
@@ -640,3 +641,531 @@ self.addEventListener('fetch', (event) => {
   );
 });
 ```
+## [3. CSS, Images, Fonts, and Rendering Optimization]()
+
+### [CSS Optimization]()
+
+#### [1. Minification and Compression]()
+
+**Minification** removes whitespace, comments, and shortens code:
+
+```css
+/* Before minification (10 KB) */
+.button {
+  background-color: #007bff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  color: white;
+}
+
+/* After minification (2 KB) */
+.button{background-color:#007bff;padding:10px 20px;border-radius:4px;color:#fff}
+```
+
+**Tools:**
+- **cssnano** - PostCSS plugin
+- **clean-css** - Fast minifier
+- **PurgeCSS** - Removes unused CSS
+
+```javascript
+// Build configuration
+module.exports = {
+  plugins: [
+    require('cssnano')({
+      preset: ['default', {
+        discardComments: { removeAll: true },
+      }]
+    })
+  ]
+}
+```
+
+---
+
+#### [2. Critical CSS]()
+
+Inline critical above-the-fold CSS to avoid render-blocking:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Inline critical CSS -->
+  <style>
+    .header{background:#000;padding:20px}
+    .hero{min-height:400px;background:#f5f5f5}
+  </style>
+  
+  <!-- Load full CSS async -->
+  <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles.css"></noscript>
+</head>
+```
+
+**Tools:**
+- **Critical** - Extract & inline critical CSS
+- **Critters** - Webpack plugin
+
+---
+
+#### [3. CSS-in-JS vs Traditional CSS]()
+
+**Traditional CSS (Better for performance):**
+```css
+/* styles.css - Single file, cached, processed at build time */
+.button { color: blue; }
+```
+
+**CSS-in-JS (Runtime overhead):**
+```javascript
+// Generates styles at runtime
+const Button = styled.div`
+  color: blue;
+`;
+```
+
+**Performance Tips:**
+- Use CSS Modules for scoping
+- Avoid runtime CSS-in-JS in performance-critical apps
+- If using CSS-in-JS, use static extraction (Linaria, vanilla-extract)
+
+---
+
+#### [4. Utility-First CSS (Tailwind)]()
+
+**Benefits:**
+- Smaller bundle size (remove unused classes)
+- No naming conventions needed
+- Consistent design tokens
+
+```html
+<!-- Before: Custom CSS -->
+<style>
+  .custom-button { @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded; }
+</style>
+<button class="custom-button">Click</button>
+
+<!-- After: Utility classes -->
+<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+  Click
+</button>
+```
+
+**Optimization with PurgeCSS:**
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: [
+    './src/**/*.{js,jsx,ts,tsx,html}',
+  ],
+  // Before purge: 3 MB
+  // After purge: ~10 KB (only used classes)
+}
+```
+
+**Best Practices:**
+- Enable JIT mode for development
+- Purge unused classes in production
+- Use `@apply` sparingly (reduces utility benefits)
+
+---
+
+### [Image Optimization]()
+
+#### [1. Image Formats Comparison]()
+
+| Format | Type | Compression | Transparency | Animation | Best For | Size |
+|--------|------|-------------|--------------|-----------|----------|------|
+| **JPEG** | Raster | Lossy | No | No | Photos | Medium |
+| **PNG** | Raster | Lossless | Yes | No | Graphics with transparency | Large |
+| **WebP** | Raster | Both | Yes | Yes | General purpose (modern) | Small |
+| **AVIF** | Raster | Both | Yes | Yes | Next-gen format | Smallest |
+| **SVG** | Vector | Lossless | Yes | Yes | Icons, logos | Tiny (scalable) |
+| **GIF** | Raster | Lossless | Yes | Yes | Legacy animations | Large |
+
+---
+
+#### [2. Modern Raster Formats]()
+
+**WebP** (30% smaller than JPEG):
+```html
+<picture>
+  <source srcset="image.webp" type="image/webp">
+  <img src="image.jpg" alt="Fallback">
+</picture>
+```
+
+**AVIF** (50% smaller than JPEG, newest format):
+```html
+<picture>
+  <source srcset="image.avif" type="image/avif">
+  <source srcset="image.webp" type="image/webp">
+  <img src="image.jpg" alt="Fallback">
+</picture>
+```
+
+**Browser Support (2025):**
+- WebP: ~97% (all modern browsers)
+- AVIF: ~90% (Chrome, Firefox, Safari 16+)
+
+**Conversion:**
+```bash
+# Convert to WebP
+cwebp image.jpg -q 80 -o image.webp
+
+# Convert to AVIF
+avifenc image.jpg image.avif --quality 80
+
+# Batch convert
+for f in *.jpg; do cwebp "$f" -o "${f%.jpg}.webp"; done
+```
+
+---
+
+#### [3. Animations: GIF vs MP4 vs WebP]()
+
+**Problem with GIF:**
+- Large file size (no modern compression)
+- Limited colors (256 colors)
+- No audio support
+
+**Solution: Use Video Formats**
+
+| Format | Size | Quality | Browser Support | Best For |
+|--------|------|---------|----------------|----------|
+| **GIF** | 3.2 MB | Poor | Universal | Legacy only |
+| **MP4** | 500 KB | Excellent | Universal | General animations |
+| **WebM** | 400 KB | Excellent | 95% | Modern browsers |
+| **Animated WebP** | 450 KB | Good | 97% | Simple animations |
+
+**Convert GIF to Video:**
+```bash
+# GIF to MP4 (80-95% size reduction)
+ffmpeg -i animation.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" animation.mp4
+
+# GIF to WebM
+ffmpeg -i animation.gif -c vp9 -b:v 0 -crf 30 animation.webm
+
+# GIF to Animated WebP
+gif2webp animation.gif -o animation.webp
+```
+
+**Implementation:**
+```html
+<!-- Replace GIF with video -->
+<video autoplay loop muted playsinline>
+  <source src="animation.webm" type="video/webm">
+  <source src="animation.mp4" type="video/mp4">
+  <!-- Fallback -->
+  <img src="animation.gif" alt="Animation">
+</video>
+
+<!-- Or use animated WebP -->
+<picture>
+  <source srcset="animation.webp" type="image/webp">
+  <img src="animation.gif" alt="Animation">
+</picture>
+```
+
+**Results:**
+```
+GIF:           3,200 KB  (baseline)
+MP4:             500 KB  (84% smaller)
+WebM:            400 KB  (87% smaller)
+Animated WebP:   450 KB  (86% smaller)
+```
+
+---
+
+#### [4. Responsive Images]()
+
+**Use `srcset` for different screen sizes:**
+```html
+<img 
+  src="image-800.jpg"
+  srcset="
+    image-400.jpg 400w,
+    image-800.jpg 800w,
+    image-1200.jpg 1200w,
+    image-1600.jpg 1600w
+  "
+  sizes="(max-width: 600px) 400px,
+         (max-width: 1000px) 800px,
+         1200px"
+  alt="Responsive image"
+  loading="lazy"
+  decoding="async"
+>
+```
+
+**Art direction with `<picture>`:**
+```html
+<picture>
+  <!-- Mobile: Portrait crop -->
+  <source media="(max-width: 600px)" srcset="image-portrait.jpg">
+  
+  <!-- Tablet: Square crop -->
+  <source media="(max-width: 1000px)" srcset="image-square.jpg">
+  
+  <!-- Desktop: Landscape -->
+  <img src="image-landscape.jpg" alt="Adaptive image">
+</picture>
+```
+
+---
+
+#### [5. Lazy Loading]()
+
+```html
+<!-- Native lazy loading -->
+<img src="image.jpg" loading="lazy" alt="Lazy loaded">
+
+<!-- Eager load for above-the-fold -->
+<img src="hero.jpg" loading="eager" fetchpriority="high" alt="Hero">
+
+<!-- JavaScript fallback -->
+<img 
+  data-src="image.jpg" 
+  class="lazy"
+  alt="Image"
+>
+
+<script>
+  const images = document.querySelectorAll('img.lazy');
+  
+  const imageObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        img.src = img.dataset.src;
+        img.classList.remove('lazy');
+        imageObserver.unobserve(img);
+      }
+    });
+  });
+  
+  images.forEach(img => imageObserver.observe(img));
+</script>
+```
+
+---
+
+#### [6. Image CDN & Optimization Services]()
+
+```html
+<!-- Cloudinary -->
+<img src="https://res.cloudinary.com/demo/image/upload/
+  w_800,          <!-- Width -->
+  f_auto,         <!-- Auto format (WebP/AVIF) -->
+  q_auto,         <!-- Auto quality -->
+  c_fill,         <!-- Crop fill -->
+  g_auto          <!-- Auto focus -->
+/sample.jpg" alt="Optimized">
+
+<!-- imgix -->
+<img src="https://demo.imgix.net/image.jpg?
+  w=800&
+  auto=format,compress&
+  fit=crop
+" alt="Optimized">
+```
+
+---
+
+### [Font Optimization]()
+
+#### [1. Font Loading Strategies]()
+
+**font-display options:**
+```css
+@font-face {
+  font-family: 'CustomFont';
+  src: url('font.woff2') format('woff2');
+  font-display: swap; /* Show fallback immediately, swap when loaded */
+}
+
+/* Options:
+   - auto: Browser default
+   - block: Hide text (max 3s), then show (FOIT - Flash of Invisible Text)
+   - swap: Show fallback immediately, swap when loaded (FOUT - Flash of Unstyled Text)
+   - fallback: Brief hide (100ms), swap if loads within 3s, else use fallback
+   - optional: Brief hide, use only if cached (best for performance)
+*/
+```
+
+**Recommendation:** Use `swap` for better UX, `optional` for best performance
+
+---
+
+#### [2. Font Format Priorities]()
+
+```css
+@font-face {
+  font-family: 'CustomFont';
+  src: url('font.woff2') format('woff2'),      /* Modern (best compression) */
+       url('font.woff') format('woff'),        /* Fallback */
+       url('font.ttf') format('truetype');     /* Legacy fallback */
+  font-display: swap;
+}
+
+/* Format comparison:
+   WOFF2: 30% smaller than WOFF (use this)
+   WOFF:  Older format
+   TTF:   Uncompressed (avoid)
+*/
+```
+
+---
+
+#### [3. Preload Critical Fonts]()
+
+```html
+<head>
+  <!-- Preload fonts used above the fold -->
+  <link 
+    rel="preload" 
+    href="fonts/main-font.woff2" 
+    as="font" 
+    type="font/woff2"
+    crossorigin
+  >
+  
+  <!-- Preconnect to Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+```
+
+---
+
+#### [4. Variable Fonts]()
+
+Single file contains multiple weights/styles:
+
+```css
+/* Traditional: Multiple files */
+@font-face { font-family: 'Font'; font-weight: 400; src: url('regular.woff2'); }
+@font-face { font-family: 'Font'; font-weight: 700; src: url('bold.woff2'); }
+/* Total: 200 KB */
+
+/* Variable font: One file for all weights */
+@font-face {
+  font-family: 'FontVariable';
+  src: url('font-variable.woff2') format('woff2-variations');
+  font-weight: 100 900; /* Supports all weights */
+}
+/* Total: 120 KB (40% smaller) */
+
+.text {
+  font-family: 'FontVariable';
+  font-weight: 456; /* Any weight between 100-900 */
+}
+```
+
+
+### [Rendering Optimization]()
+
+#### [1. Critical Rendering Path]()
+
+```
+1. HTML Parsing → DOM Tree
+2. CSS Parsing  → CSSOM Tree
+3. DOM + CSSOM  → Render Tree
+4. Layout       → Calculate positions
+5. Paint        → Draw pixels
+6. Composite    → Layer composition
+```
+
+**Bottlenecks:**
+- Render-blocking CSS
+- Parser-blocking JavaScript
+- Large DOM trees
+- Complex CSS selectors
+
+---
+
+#### [2. Reduce Reflows and Repaints]()
+
+**Reflow** (expensive) - Recalculate layout:
+- Changing: width, height, position, display
+- Adding/removing elements
+- Font changes
+
+**Repaint** (less expensive) - Redraw pixels:
+- Changing: color, background, visibility
+- No layout change
+
+```javascript
+// ❌ Bad: Multiple reflows (Layout Thrashing)
+for (let i = 0; i < elements.length; i++) {
+  elements[i].style.width = elements[i].offsetWidth + 10 + 'px';
+  // Read (offsetWidth) → Write (style.width) → Reflow!
+}
+
+// ✅ Good: Batch reads and writes
+const widths = [];
+for (let i = 0; i < elements.length; i++) {
+  widths[i] = elements[i].offsetWidth; // Read all
+}
+for (let i = 0; i < elements.length; i++) {
+  elements[i].style.width = widths[i] + 10 + 'px'; // Write all
+}
+
+// ✅ Better: Use CSS transforms (no reflow)
+element.style.transform = 'translateX(100px)'; // Only composite
+```
+
+---
+
+#### [3. Use CSS Transform and Opacity]()
+
+**These properties only trigger composite (cheapest):**
+```css
+/* ✅ Performant - GPU accelerated */
+.animated {
+  transform: translateX(100px);
+  opacity: 0.5;
+  will-change: transform, opacity;
+}
+
+/* ❌ Expensive - Triggers layout/paint */
+.animated {
+  left: 100px;      /* Reflow */
+  width: 200px;     /* Reflow */
+  background: red;  /* Repaint */
+}
+```
+
+**CSS Triggers Reference:**
+- `transform`, `opacity` → Composite only (best)
+- `color`, `background` → Paint + Composite
+- `width`, `height`, `position` → Layout + Paint + Composite (worst)
+
+---
+
+#### [4. Layer Promotion]()
+
+Create separate compositing layers:
+
+```css
+/* Promote to own layer */
+.animated-element {
+  will-change: transform, opacity;
+  /* Or */
+  transform: translateZ(0); /* Force GPU */
+}
+
+/* Warning: Don't overuse! */
+/* Each layer uses memory (~10MB for 1000px x 1000px) */
+```
+
+**When to use:**
+- Elements with frequent animations
+- Fixed/sticky positioned elements
+- Canvas/video elements
+
+**When NOT to use:**
+- Static elements
+- Too many layers (memory issues)
+
+---
