@@ -7,6 +7,7 @@
 - [3. Server-Sent Events (SSE)](#3-server-sent-events-sse)
 - [4. Web Sockets](#4-websockets)
 - [5. Classic REST and GraphQL](#5-classic-rest-and-graphql)
+- [6. Web Transport](#6-webtransport)
 
 
 
@@ -202,7 +203,7 @@ WebSockets provide **full-duplex, bidirectional** communication between client a
 
 ## [5. Classic REST and GraphQL]()
 
-### REST (Representational State Transfer)
+### [REST (Representational State Transfer)]()
 
 REST is an architectural style for building APIs using standard HTTP methods and resource-based URLs. It's the traditional approach for client-server communication on the web.
 
@@ -258,7 +259,7 @@ Response: 204 No Content
 ❌ **Versioning:** Breaking changes require API versioning
 ❌ **Fixed Structure:** Server decides response shape
 
-### GraphQL
+### [GraphQL]()
 
 GraphQL is a query language that lets clients request exactly the data they need in a single request, with a flexible, strongly-typed schema.
 
@@ -376,7 +377,7 @@ type Mutation {
 ❌ **File Uploads:** Not built-in, needs workarounds
 ❌ **Backend Complexity:** Resolver implementation can be complex
 
-### REST vs GraphQL Comparison
+### [REST vs GraphQL Comparison]()
 
 | Feature | REST | GraphQL |
 |---------|------|---------|
@@ -391,7 +392,7 @@ type Mutation {
 | **Tooling** | Mature | Growing |
 | **Best For** | Simple CRUD, public APIs | Complex data, mobile apps |
 
-### When to Use Each
+### [When to Use Each]()
 
 **Use REST when:**
 - Building simple CRUD APIs
@@ -407,7 +408,7 @@ type Mutation {
 - Rapid frontend iteration
 - Need real-time updates (subscriptions)
 
-### Hybrid Approach
+### [Hybrid Approach]()
 
 Many teams use both:
 ```javascript
@@ -425,3 +426,241 @@ query { dashboard { user { ... }, stats { ... } } }
 - Over-fetching wastes bandwidth
 - Different clients need different data shapes
 - Frontend team wants more control
+
+## [6. WebTransport]()
+
+### What is WebTransport?
+
+WebTransport is a modern web API providing **low-latency, bidirectional communication** over HTTP/3. It combines the benefits of WebSockets with UDP-like capabilities, supporting both reliable and unreliable data transfer.
+
+**Key Characteristics:**
+- Built on **HTTP/3** and **QUIC protocol** (UDP-based)
+- Multiple independent streams in a single connection
+- Supports **unreliable datagrams** (like UDP)
+- Supports **reliable streams** (like TCP)
+- No head-of-line blocking
+- Lower latency than WebSockets
+
+### [How It Works]()
+
+WebTransport uses QUIC, which multiplexes multiple streams over a single connection. Unlike TCP (used by WebSockets), if one stream has packet loss, other streams aren't blocked.
+
+**Two Data Transfer Modes:**
+
+1. **Datagrams** (Unreliable, Fast):
+   - No delivery guarantee
+   - No ordering guarantee
+   - Perfect for real-time data where latest is best
+
+2. **Streams** (Reliable, Ordered):
+   - Guaranteed delivery
+   - Ordered within stream
+   - Multiple independent streams
+
+### Client-Side Example
+
+```javascript
+// Connect to server
+const url = 'https://example.com:4433/webtransport';
+const transport = new WebTransport(url);
+
+// Wait for connection
+await transport.ready;
+console.log('Connected!');
+
+// === UNRELIABLE DATAGRAMS (for real-time data) ===
+// Send datagrams (fast, no guarantee)
+const datagramWriter = transport.datagrams.writable.getWriter();
+await datagramWriter.write(new Uint8Array([1, 2, 3, 4]));
+
+// Receive datagrams
+const datagramReader = transport.datagrams.readable.getReader();
+while (true) {
+  const { value, done } = await datagramReader.read();
+  if (done) break;
+  console.log('Received datagram:', value);
+}
+
+// === RELIABLE BIDIRECTIONAL STREAMS ===
+// Create outgoing stream
+const stream = await transport.createBidirectionalStream();
+const writer = stream.writable.getWriter();
+const reader = stream.readable.getReader();
+
+// Send data
+const encoder = new TextEncoder();
+await writer.write(encoder.encode('Hello from client'));
+
+// Receive data
+const { value } = await reader.read();
+const decoder = new TextDecoder();
+console.log('Response:', decoder.decode(value));
+
+// === UNIDIRECTIONAL STREAMS ===
+// Send-only stream
+const sendStream = await transport.createUnidirectionalStream();
+const sendWriter = sendStream.getWriter();
+await sendWriter.write(encoder.encode('One-way message'));
+await sendWriter.close();
+
+// Receive incoming streams
+const streamReader = transport.incomingUnidirectionalStreams.getReader();
+while (true) {
+  const { value: incomingStream, done } = await streamReader.read();
+  if (done) break;
+  
+  // Read from incoming stream
+  const reader = incomingStream.getReader();
+  const { value: data } = await reader.read();
+  console.log('Incoming:', decoder.decode(data));
+}
+
+// Close connection
+await transport.close();
+```
+
+### Server-Side Example (Node.js)
+
+```javascript
+// Using @fails-components/webtransport
+import { Http3Server } from '@fails-components/webtransport';
+
+const server = new Http3Server({
+  port: 4433,
+  host: '0.0.0.0',
+  secret: 'your-secret',
+  cert: './cert.pem',
+  privKey: './key.pem'
+});
+
+server.startServer();
+
+server.on('session', (session) => {
+  console.log('Client connected');
+  
+  // Handle incoming bidirectional streams
+  session.on('stream', async (stream) => {
+    const reader = stream.readable.getReader();
+    const writer = stream.writable.getWriter();
+    
+    // Echo back data
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      await writer.write(value);
+    }
+  });
+  
+  // Handle datagrams
+  session.on('datagram', (datagram) => {
+    console.log('Received datagram:', datagram);
+    // Send back
+    session.sendDatagram(datagram);
+  });
+  
+  // Send data to client
+  const stream = await session.createBidirectionalStream();
+  const writer = stream.writable.getWriter();
+  await writer.write(new TextEncoder().encode('Server message'));
+});
+```
+
+### Use Cases
+
+**Perfect For:**
+
+**1. Cloud Gaming:**
+```javascript
+// Game state updates (unreliable, fast)
+const gameState = { x: 100, y: 200, velocity: 5 };
+await datagramWriter.write(
+  new TextEncoder().encode(JSON.stringify(gameState))
+);
+```
+
+**2. Live Video Streaming:**
+```javascript
+// Video frames via datagrams (drop old frames if network slow)
+const videoFrame = new Uint8Array(frameData);
+await datagramWriter.write(videoFrame);
+```
+
+**3. Real-time Collaboration:**
+```javascript
+// Critical edits via streams (reliable)
+const editStream = await transport.createUnidirectionalStream();
+await editStream.getWriter().write(
+  new TextEncoder().encode(JSON.stringify({ 
+    action: 'insert', 
+    text: 'Hello' 
+  }))
+);
+
+// Cursor positions via datagrams (unreliable is fine)
+await datagramWriter.write(cursorPosition);
+```
+
+**4. IoT Sensor Data:**
+```javascript
+// Sensor readings (datagrams - latest value matters)
+const temperature = { sensor: 'temp1', value: 23.5 };
+await datagramWriter.write(
+  new TextEncoder().encode(JSON.stringify(temperature))
+);
+```
+
+### Advantages
+
+✅ **Lower Latency:** QUIC reduces connection setup time (1-RTT vs 2-RTT)
+✅ **No Head-of-Line Blocking:** Lost packets only affect their stream
+✅ **Multiple Streams:** Independent channels in one connection
+✅ **Flexible Reliability:** Choose reliable/unreliable per message
+✅ **Better for Lossy Networks:** UDP-based, handles packet loss better
+✅ **Connection Migration:** Survive network changes (WiFi → Cellular)
+
+### Limitations
+
+❌ **Browser Support:** Limited (Chrome/Edge stable, Firefox/Safari in progress)
+❌ **HTTP/3 Required:** Server must support HTTP/3 and QUIC
+❌ **Complexity:** More complex than WebSockets
+❌ **TLS Required:** Must use HTTPS (no insecure transport)
+❌ **Firewall Issues:** Some networks block UDP
+❌ **Immature Ecosystem:** Fewer libraries and tools
+
+### Browser Support (2025)
+
+| Browser | Support | Notes |
+|---------|---------|-------|
+| Chrome 97+ | ✅ Full | Stable since 2022 |
+| Edge 97+ | ✅ Full | Stable since 2022 |
+| Firefox | 🟡 Experimental | Behind flag |
+| Safari | 🟡 Experimental | In development |
+| Mobile Chrome | ✅ Full | Supported |
+
+### [WebTransport vs WebSockets]()
+
+| Feature | WebTransport | WebSockets |
+|---------|--------------|------------|
+| **Protocol** | HTTP/3 (QUIC/UDP) | HTTP/1.1 or HTTP/2 (TCP) |
+| **Latency** | Lower | Higher |
+| **Reliability** | Both reliable & unreliable | Always reliable |
+| **Head-of-line blocking** | No | Yes |
+| **Multiple streams** | Yes | No (single stream) |
+| **Connection setup** | 1-RTT | 2-RTT |
+| **Browser support** | Limited | Universal |
+| **Best for** | Gaming, streaming | General real-time apps |
+
+### [When to Use]()
+
+**Use WebTransport when:**
+- Building cloud gaming platforms
+- Ultra-low latency video streaming
+- Real-time applications where some data loss is acceptable
+- Need multiple independent data channels
+- Network conditions vary (mobile)
+
+**Use WebSockets when:**
+- Need universal browser support
+- All data must be reliable
+- Simple bidirectional communication
+- Established ecosystem and tooling
