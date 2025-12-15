@@ -6,6 +6,7 @@
 - [2. Network Connectivity](#2-network-connectivity)
 - [3. Server-Sent Events (SSE)](#3-server-sent-events-sse)
 - [4. Web Sockets](#4-websockets)
+- [5. Classic REST and GraphQL](#5-classic-rest-and-graphql)
 
 
 
@@ -198,3 +199,229 @@ WebSockets provide **full-duplex, bidirectional** communication between client a
 - One-way server updates (use SSE instead)
 - Occasional updates (use polling or SSE)
 - Static content fetching (use HTTP)
+
+## [5. Classic REST and GraphQL]()
+
+### REST (Representational State Transfer)
+
+REST is an architectural style for building APIs using standard HTTP methods and resource-based URLs. It's the traditional approach for client-server communication on the web.
+
+**Core Principles:**
+- **Resources:** Everything is a resource with a unique URI
+- **HTTP Methods:** GET, POST, PUT, PATCH, DELETE
+- **Stateless:** Each request contains all needed information
+- **Standard Status Codes:** 200, 404, 500, etc.
+
+**Example:**
+```javascript
+// Fetch user
+GET /api/users/123
+Response: { id: 123, name: "Alice", email: "alice@example.com" }
+
+// Fetch user's posts
+GET /api/users/123/posts
+Response: [{ id: 1, title: "Post 1" }, { id: 2, title: "Post 2" }]
+
+// Fetch post comments
+GET /api/posts/1/comments
+Response: [{ id: 1, text: "Great!" }, { id: 2, text: "Nice!" }]
+
+// Create new post
+POST /api/posts
+Body: { title: "New Post", content: "..." }
+Response: { id: 3, title: "New Post", ... }
+
+// Update user
+PUT /api/users/123
+Body: { name: "Alice Smith", email: "alice@example.com" }
+
+// Partial update
+PATCH /api/users/123
+Body: { name: "Alice Smith" }
+
+// Delete post
+DELETE /api/posts/1
+Response: 204 No Content
+```
+
+**Advantages:**
+✅ Simple and well-understood
+✅ Cacheable (HTTP caching)
+✅ Stateless and scalable
+✅ Language/platform agnostic
+✅ Wide tooling support
+
+**Problems:**
+❌ **Over-fetching:** Get more data than needed
+❌ **Under-fetching:** Need multiple requests for related data
+❌ **N+1 Problem:** Fetch user → fetch posts → fetch comments (waterfall)
+❌ **Versioning:** Breaking changes require API versioning
+❌ **Fixed Structure:** Server decides response shape
+
+### GraphQL
+
+GraphQL is a query language that lets clients request exactly the data they need in a single request, with a flexible, strongly-typed schema.
+
+**Core Concepts:**
+- **Single Endpoint:** All queries go to `/graphql`
+- **Client-Specified Queries:** Client controls response structure
+- **Strongly Typed:** Schema defines all types and operations
+- **Introspection:** API is self-documenting
+
+**Example:**
+```javascript
+// Single query for user, posts, and comments
+POST /graphql
+Body: {
+  query: `
+    query {
+      user(id: 123) {
+        name
+        email
+        posts {
+          title
+          comments {
+            text
+            author {
+              name
+            }
+          }
+        }
+      }
+    }
+  `
+}
+
+Response: {
+  data: {
+    user: {
+      name: "Alice",
+      email: "alice@example.com",
+      posts: [
+        {
+          title: "Post 1",
+          comments: [
+            { text: "Great!", author: { name: "Bob" } },
+            { text: "Nice!", author: { name: "Charlie" } }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+// Mutation (create/update/delete)
+mutation {
+  createPost(title: "New Post", content: "...") {
+    id
+    title
+  }
+}
+
+// Request only specific fields
+query {
+  user(id: 123) {
+    name  # Only fetch name, skip email
+  }
+}
+```
+
+**Schema Definition (Server-side):**
+```graphql
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  posts: [Post!]!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  author: User!
+  comments: [Comment!]!
+}
+
+type Comment {
+  id: ID!
+  text: String!
+  author: User!
+}
+
+type Query {
+  user(id: ID!): User
+  posts: [Post!]!
+}
+
+type Mutation {
+  createPost(title: String!, content: String!): Post!
+  updateUser(id: ID!, name: String): User!
+}
+```
+
+**Advantages:**
+✅ **No Over/Under-fetching:** Get exactly what you need
+✅ **Single Request:** Fetch related data in one query
+✅ **Strong Typing:** Type safety and validation
+✅ **Self-Documenting:** Schema serves as documentation
+✅ **Flexible:** Client controls response shape
+✅ **Versioning-Free:** Add fields without breaking changes
+
+**Challenges:**
+❌ **Complexity:** Steeper learning curve
+❌ **Caching:** HTTP caching is harder (all POST to /graphql)
+❌ **Query Cost:** Complex queries can be expensive
+❌ **Over-Querying:** Malicious/accidental expensive queries
+❌ **File Uploads:** Not built-in, needs workarounds
+❌ **Backend Complexity:** Resolver implementation can be complex
+
+### REST vs GraphQL Comparison
+
+| Feature | REST | GraphQL |
+|---------|------|---------|
+| **Endpoints** | Multiple (`/users`, `/posts`) | Single (`/graphql`) |
+| **Data Fetching** | Fixed by server | Client-specified |
+| **Over-fetching** | Common | No |
+| **Under-fetching** | Common (N+1) | No |
+| **Caching** | HTTP caching (easy) | Custom caching (complex) |
+| **Learning Curve** | Easy | Moderate |
+| **Versioning** | Required (v1, v2) | Not needed |
+| **Real-time** | Requires WebSocket | Subscriptions built-in |
+| **Tooling** | Mature | Growing |
+| **Best For** | Simple CRUD, public APIs | Complex data, mobile apps |
+
+### When to Use Each
+
+**Use REST when:**
+- Building simple CRUD APIs
+- Need standard HTTP caching
+- Team unfamiliar with GraphQL
+- Public API for third parties
+- Simple data relationships
+
+**Use GraphQL when:**
+- Mobile apps (reduce data transfer)
+- Complex, nested data requirements
+- Multiple clients with different needs
+- Rapid frontend iteration
+- Need real-time updates (subscriptions)
+
+### Hybrid Approach
+
+Many teams use both:
+```javascript
+// REST for simple operations
+GET /api/auth/login
+POST /api/files/upload
+
+// GraphQL for complex data fetching
+POST /graphql
+query { dashboard { user { ... }, stats { ... } } }
+```
+
+**Best Practice:** Start with REST, migrate to GraphQL when:
+- Multiple related API calls slow down app
+- Over-fetching wastes bandwidth
+- Different clients need different data shapes
+- Frontend team wants more control
