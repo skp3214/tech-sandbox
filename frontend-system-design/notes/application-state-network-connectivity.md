@@ -4,6 +4,8 @@
 
 - [1. Application State Design](#1-application-state-design)
 - [2. Network Connectivity](#2-network-connectivity)
+- [3. Server-Sent Events (SSE)](#3-server-sent-events-sse)
+- [4. Web Sockets](#4-websockets)
 
 
 
@@ -101,7 +103,7 @@ Server-Sent Events is a standard for **one-way, server-to-client** real-time com
 - Simple text-based protocol
 - Native browser support via `EventSource` API
 
-### How It Works
+### [How It Works]()
 
 ```javascript
 // Client-side
@@ -144,7 +146,7 @@ app.get('/api/stream', (req, res) => {
 });
 ```
 
-### When to Use SSE
+### [When to Use SSE]()
 
 **Good For:**
 - **Live Notifications:** Real-time alerts, news feeds
@@ -158,3 +160,41 @@ app.get('/api/stream', (req, res) => {
 - Bidirectional communication (use WebSockets)
 - Binary data transfer (text-only)
 - IE/Edge legacy support (no native support)
+
+## [4. WebSockets]()
+
+### What are WebSockets?
+
+WebSockets provide **full-duplex, bidirectional** communication between client and server over a single, persistent TCP connection. Unlike HTTP's request-response model, both sides can send messages independently at any time.
+
+**Key Characteristics:**
+- Bidirectional (client ↔ server)
+- Persistent connection
+- Low latency (~1-2ms overhead)
+- Supports text and binary data
+- Uses `ws://` or `wss://` protocol
+- Native browser support via `WebSocket` API
+
+### [How It Works]()
+
+**Connection Upgrade:**
+1. Client initiates HTTP request with `Upgrade: websocket` header
+2. Server responds with `101 Switching Protocols`
+3. Connection upgraded to WebSocket protocol
+4. Both sides can now send/receive messages freely
+
+### [When to Use WebSockets]()
+
+**Perfect For:**
+- **Real-time Chat:** Instant messaging, group chats
+- **Multiplayer Games:** Low-latency game state sync
+- **Collaborative Editing:** Google Docs-style collaboration
+- **Live Trading:** Stock/crypto trading platforms
+- **IoT Dashboards:** Real-time sensor data
+- **Live Sports Scores:** Instant score updates
+- **Video Conferencing:** Signaling for WebRTC
+
+**Not Ideal For:**
+- One-way server updates (use SSE instead)
+- Occasional updates (use polling or SSE)
+- Static content fetching (use HTTP)
