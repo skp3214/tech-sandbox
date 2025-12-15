@@ -11,3 +11,5 @@
 - ### [4. Virtualization](/frontend-system-design/notes/virtualization.md)
 
 - ### [5. Application State and Network Connectivity](/frontend-system-design/notes/application-state-network-connectivity.md)
+
+- ### [6. Web App Performances](/frontend-system-design/notes/web-app-performance.md)
