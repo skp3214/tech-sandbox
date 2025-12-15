@@ -3,18 +3,17 @@
 ## Table of Contents
 
 - [1. Performance Optimization](#1-performance-optimization)
-  - [1.1. Core Web Vitals](#core-web-vitals)
-  - [1.2. HTTP Protocol Versions](#http-protocol-versions)
+- [2. JavaScript Bundling and Loading](#2-javascript-bundling-and-loading)
 
 ## [1. Performance Optimization]()
 
-### Core Web Vitals
+### [Core Web Vitals]()
 
 Core Web Vitals are Google's essential metrics for measuring real-world user experience on the web. These metrics impact SEO rankings and user satisfaction.
 
 #### The Three Core Metrics
 
-**1. LCP (Largest Contentful Paint)**
+[**1. LCP (Largest Contentful Paint)**]()
 
 Measures **loading performance** - how long it takes for the largest content element to become visible.
 
@@ -62,7 +61,7 @@ Measures **loading performance** - how long it takes for the largest content ele
 
 ---
 
-**2. INP (Interaction to Next Paint)**
+[**2. INP (Interaction to Next Paint)**]()
 
 Measures **responsiveness** - how quickly the page responds to user interactions (clicks, taps, keyboard).
 
@@ -123,7 +122,7 @@ input.addEventListener('input', (e) => {
 
 ---
 
-**3. CLS (Cumulative Layout Shift)**
+[**3. CLS (Cumulative Layout Shift)**]()
 
 Measures **visual stability** - unexpected layout shifts that cause elements to move while page loads.
 
@@ -183,42 +182,18 @@ Measures **visual stability** - unexpected layout shifts that cause elements to 
 
 ---
 
-#### Measuring Web Vitals
-
-```javascript
-// Using web-vitals library
-import { onLCP, onINP, onCLS } from 'web-vitals';
-
-onLCP(metric => {
-  console.log('LCP:', metric.value);
-  // Send to analytics
-  analytics.send({ metric: 'LCP', value: metric.value });
-});
-
-onINP(metric => {
-  console.log('INP:', metric.value);
-  analytics.send({ metric: 'INP', value: metric.value });
-});
-
-onCLS(metric => {
-  console.log('CLS:', metric.value);
-  analytics.send({ metric: 'CLS', value: metric.value });
-});
-```
 
 **Tools for Testing:**
 - Chrome DevTools (Lighthouse)
 - PageSpeed Insights
-- Web Vitals Chrome Extension
-- Search Console (Core Web Vitals report)
 
 ---
 
-### HTTP Protocol Versions
+### [HTTP Protocol Versions]()
 
 Understanding HTTP versions is crucial for performance optimization as each version introduces improvements for faster, more efficient communication.
 
-#### HTTP/1.1 (1997)
+#### [HTTP/1.1 (1997)]()
 
 **Characteristics:**
 - One request per TCP connection (or sequential with keep-alive)
@@ -249,7 +224,7 @@ Request 3 → Wait → Response 3
 
 ---
 
-#### HTTP/2 (2015)
+#### [HTTP/2 (2015)]()
 
 **Key Improvements:**
 
@@ -308,7 +283,7 @@ Connection 1:
 
 ---
 
-#### HTTP/3 (2022)
+#### [HTTP/3 (2022)]()
 
 **Revolutionary Change: Built on QUIC (UDP instead of TCP)**
 
@@ -357,77 +332,311 @@ Combined handshake = 0-1 RTT (with 0-RTT on reconnection)
 - ❌ Higher CPU usage (QUIC in userspace)
 - ❌ Not all CDNs support it yet
 
----
+## [2. JavaScript Bundling and Loading]()
 
-#### HTTP Version Comparison
+### [What is Bundling?]()
 
-| Feature | HTTP/1.1 | HTTP/2 | HTTP/3 |
-|---------|----------|--------|--------|
-| **Protocol** | TCP | TCP | QUIC (UDP) |
-| **Multiplexing** | No | Yes | Yes |
-| **Header Compression** | No | HPACK | QPACK |
-| **Head-of-line Blocking** | Yes (request level) | Yes (TCP level) | No |
-| **Connection Setup** | 2-3 RTT | 2-3 RTT | 0-1 RTT |
-| **Connection Migration** | No | No | Yes |
-| **Server Push** | No | Yes | Yes |
-| **Performance** | Baseline | 15-50% faster | 10-30% faster than HTTP/2 |
-| **Mobile Performance** | Poor | Good | Excellent |
-| **Browser Support** | Universal | Universal | ~95% (2025) |
+Bundling is the process of combining multiple JavaScript files into fewer files to optimize loading performance. Modern bundlers also handle transpilation, minification, tree-shaking, and code splitting.
+
+**Popular Bundlers:**
+- **Webpack** - Most configurable, mature ecosystem
+- **Vite** - Ultra-fast, ESM-based, great DX
+- **Rollup** - Excellent for libraries, best tree-shaking
+- **Parcel** - Zero config, automatic optimization
+- **esbuild** - Extremely fast (Go-based)
 
 ---
 
-#### How to Enable
+### [Bundling Strategies]()
 
-**HTTP/2:**
-```nginx
-# Nginx
-server {
-    listen 443 ssl http2;
-    ssl_certificate cert.pem;
-    ssl_certificate_key key.pem;
-}
-```
+#### [1. Single Bundle (Simple but Slow)]()
 
-**HTTP/3:**
-```nginx
-# Nginx (with QUIC module)
-server {
-    listen 443 quic reuseport;
-    listen 443 ssl http2;
-    
-    ssl_protocols TLSv1.3;
-    add_header Alt-Svc 'h3=":443"; ma=86400';
-}
-```
-
-**Detection:**
 ```javascript
-// Check protocol used
-fetch('/api/data')
-  .then(response => {
-    console.log('Protocol:', response.headers.get('x-protocol'));
-  });
+// All code in one file
+bundle.js (500 KB)
+├─ React
+├─ App code
+├─ Libraries
+└─ Utilities
 
-// Browser typically tries: HTTP/3 → HTTP/2 → HTTP/1.1
+// Problems:
+// - Large initial download
+// - Download everything even if unused
+// - No parallel loading
+// - Cache invalidation on any change
+```
+
+**When to use:** Very small apps (< 100 KB)
+
+---
+
+#### [2. Code Splitting (Smart Loading)]()
+
+Split code into smaller chunks loaded on-demand.
+
+**Route-based splitting:**
+```javascript
+// React with lazy loading
+import { lazy, Suspense } from 'react';
+
+const Home = lazy(() => import('./pages/Home'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Profile = lazy(() => import('./pages/Profile'));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+// Result:
+// main.js (50 KB) - Core app + React
+// home.chunk.js (20 KB) - Loaded on /
+// dashboard.chunk.js (30 KB) - Loaded on /dashboard
+// profile.chunk.js (15 KB) - Loaded on /profile
+```
+
+**Component-based splitting:**
+```javascript
+// Split heavy components
+const HeavyChart = lazy(() => import('./HeavyChart'));
+const VideoPlayer = lazy(() => import('./VideoPlayer'));
+
+function Dashboard() {
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <Suspense fallback={<Spinner />}>
+        <HeavyChart data={data} />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+**Dynamic imports:**
+```javascript
+// Load on interaction
+button.addEventListener('click', async () => {
+  const module = await import('./heavyFeature.js');
+  module.initialize();
+});
+
+// Conditional loading
+if (user.isPremium) {
+  const premium = await import('./premiumFeatures.js');
+  premium.enable();
+}
+```
+
+
+#### [3. Tree Shaking]()
+
+Remove unused code during bundling.
+
+```javascript
+// library.js
+export function used() { return 'I am used'; }
+export function unused() { return 'I am never used'; }
+
+// app.js
+import { used } from './library';
+console.log(used());
+
+// Bundle output (with tree-shaking):
+// Only 'used' function included, 'unused' removed
+function used() { return 'I am used'; }
+console.log(used());
+```
+
+**Best practices:**
+```javascript
+// ✅ Good: Named imports (tree-shakeable)
+import { Button } from 'ui-library';
+
+// ❌ Bad: Default imports (imports everything)
+import * as UI from 'ui-library';
+
+// ✅ Good: Import specific modules
+import debounce from 'lodash/debounce';
+
+// ❌ Bad: Import entire library
+import _ from 'lodash';
 ```
 
 ---
 
-#### Optimization Strategy by Version
+### [Loading Strategies]()
 
-**HTTP/1.1:**
-- Minimize requests (sprites, concatenation)
-- Domain sharding (4-6 domains)
-- Inline critical CSS
-- Use CDN
+#### [1. Script Tag Attributes]()
 
-**HTTP/2:**
-- Avoid concatenation (use code splitting)
-- Remove domain sharding
-- Serve many small, cacheable files
-- Use server push carefully
+```html
+<!-- Normal: Blocks parsing and rendering -->
+<script src="app.js"></script>
 
-**HTTP/3:**
-- Same as HTTP/2
-- Especially beneficial for mobile users
-- Consider fallback to HTTP/2 for enterprise networks
+<!-- Async: Downloads in parallel, executes when ready -->
+<script src="app.js" async></script>
+<!-- Use for: Analytics, ads, independent scripts -->
+
+<!-- Defer: Downloads in parallel, executes after HTML parsed -->
+<script src="app.js" defer></script>
+<!-- Use for: Main application scripts -->
+
+<!-- Module: Deferred by default, supports ES6 imports -->
+<script type="module" src="app.js"></script>
+```
+
+**Visual Timeline:**
+```
+Normal:  HTML parsing ──[blocked]── JS download ──[blocked]── Execute ── Continue parsing
+Async:   HTML parsing ──────────────────────────────── JS download ─[blocked]─ Execute
+Defer:   HTML parsing ──────────────────────────────── Parsing done ─ JS Execute
+```
+
+---
+
+#### [2. Preload & Prefetch]()
+
+**Preload** - High priority, needed soon:
+```html
+<!-- Load critical resources early -->
+<link rel="preload" as="script" href="critical.js">
+<link rel="preload" as="style" href="critical.css">
+<link rel="preload" as="font" href="font.woff2" crossorigin>
+
+<!-- When to use: -->
+<!-- - Above-the-fold resources -->
+<!-- - Critical path scripts -->
+<!-- - Web fonts -->
+```
+
+**Prefetch** - Low priority, might need later:
+```html
+<!-- Load for next navigation -->
+<link rel="prefetch" as="script" href="next-page.js">
+<link rel="prefetch" as="image" href="next-page-hero.jpg">
+
+<!-- When to use: -->
+<!-- - Next route resources -->
+<!-- - Anticipated user actions -->
+<!-- - Background prefetching -->
+```
+
+**Preconnect** - Establish early connection:
+```html
+<!-- Connect to third-party domains -->
+<link rel="preconnect" href="https://api.example.com">
+<link rel="dns-prefetch" href="https://cdn.example.com">
+
+<!-- When to use: -->
+<!-- - API endpoints -->
+<!-- - CDN domains -->
+<!-- - Third-party resources -->
+```
+
+---
+
+#### [3. Module Preload]()
+
+```html
+<!-- Preload ES modules and their dependencies -->
+<link rel="modulepreload" href="app.js">
+<link rel="modulepreload" href="utils.js">
+
+<!-- Then use -->
+<script type="module" src="app.js"></script>
+```
+
+---
+
+#### [4. Progressive Loading Pattern]()
+
+```javascript
+// 1. Load critical code immediately
+import('./critical.js').then(module => {
+  module.initApp();
+});
+
+// 2. Load important code after critical
+setTimeout(() => {
+  import('./important.js');
+}, 0);
+
+// 3. Load nice-to-have when idle
+if ('requestIdleCallback' in window) {
+  requestIdleCallback(() => {
+    import('./optional.js');
+  });
+} else {
+  setTimeout(() => import('./optional.js'), 2000);
+}
+
+// 4. Load on interaction
+document.getElementById('btn').addEventListener('click', () => {
+  import('./feature.js').then(module => {
+    module.activate();
+  });
+}, { once: true });
+```
+
+---
+
+### [Advanced Techniques]()
+
+#### [1. Streaming SSR]()
+
+Send HTML in chunks as it's generated.
+
+```javascript
+// Next.js App Router (React Server Components)
+export default async function Page() {
+  return (
+    <div>
+      <Header />
+      <Suspense fallback={<Skeleton />}>
+        <SlowComponent /> {/* Streamed when ready */}
+      </Suspense>
+      <Footer />
+    </div>
+  );
+}
+
+// Browser receives:
+// 1. <Header /> immediately
+// 2. <Skeleton /> placeholder
+// 3. <SlowComponent /> when data ready (streamed)
+// 4. <Footer /> immediately
+```
+
+---
+
+#### [2. Service Worker Caching]()
+
+```javascript
+// Cache bundles for offline use
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open('v1').then((cache) => {
+      return cache.addAll([
+        '/main.js',
+        '/vendor.js',
+        '/styles.css',
+      ]);
+    })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
+});
+```
