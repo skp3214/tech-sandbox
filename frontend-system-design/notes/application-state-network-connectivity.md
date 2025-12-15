@@ -87,3 +87,74 @@ Client sends HTTP request → Server holds connection open → Server responds w
 - **WebSockets:** Full-duplex, persistent connection, low latency
 - **Server-Sent Events (SSE):** Unidirectional, simple, efficient for server-to-client
 - **WebRTC:** Peer-to-peer, ultra-low latency for real-time communication
+
+## [3. Server-Sent Events (SSE)]()
+
+### What is SSE?
+
+Server-Sent Events is a standard for **one-way, server-to-client** real-time communication over HTTP. The server can push updates to the client over a single, long-lived HTTP connection.
+
+**Key Characteristics:**
+- Unidirectional (server → client only)
+- Built on standard HTTP/HTTPS
+- Automatic reconnection on disconnect
+- Simple text-based protocol
+- Native browser support via `EventSource` API
+
+### How It Works
+
+```javascript
+// Client-side
+const eventSource = new EventSource('/api/stream');
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Received:', data);
+};
+
+// Listen to specific event types
+eventSource.addEventListener('update', (event) => {
+  console.log('Update:', event.data);
+});
+
+eventSource.onerror = (error) => {
+  console.error('SSE Error:', error);
+};
+
+// Close connection when done
+eventSource.close();
+```
+
+```javascript
+// Server-side (Node.js/Express)
+app.get('/api/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  
+  // Send data every 2 seconds
+  const interval = setInterval(() => {
+    res.write(`data: ${JSON.stringify({ time: new Date() })}\n\n`);
+  }, 2000);
+  
+  // Cleanup on close
+  req.on('close', () => {
+    clearInterval(interval);
+  });
+});
+```
+
+### When to Use SSE
+
+**Good For:**
+- **Live Notifications:** Real-time alerts, news feeds
+- **Stock Tickers:** Continuous price updates
+- **Social Media Feeds:** New posts, likes, comments
+- **Progress Updates:** File uploads, background tasks
+- **Live Dashboards:** Metrics, analytics, monitoring
+- **Chat Applications:** Read-only message streams
+
+**Not Good For:**
+- Bidirectional communication (use WebSockets)
+- Binary data transfer (text-only)
+- IE/Edge legacy support (no native support)
