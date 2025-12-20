@@ -275,6 +275,7 @@
             
             <!-- Sentinel element that triggers loading -->
             <div class="sentinel" id="sentinel"></div>
+            <div class="sentinel2" id="sentinel2"></div>
         </div>
         
         <div class="loading" id="loading" style="display: none;">
@@ -304,6 +305,7 @@
         const viewport = document.getElementById('viewport');
         const postsContainer = document.getElementById('postsContainer');
         const sentinel = document.getElementById('sentinel');
+        const sentinel2 = document.getElementById('sentinel2');
         const loading = document.getElementById('loading');
         const loadedCount = document.getElementById('loadedCount');
         const loadCount = document.getElementById('loadCount');
@@ -319,6 +321,7 @@
 
         const observer = new IntersectionObserver((entries) => {
             // This callback fires when the sentinel enters or exits the viewport
+            console.log(entries);
             entries.forEach(entry => {
                 console.log('Observer triggered:', {
                     isIntersecting: entry.isIntersecting,
@@ -340,6 +343,7 @@
 
         // Start observing the sentinel element
         observer.observe(sentinel);
+        observer.observe(sentinel2);
 
         // ===== SCROLL HANDLER FOR VIRTUALIZATION =====
         let scrollTimeout;
