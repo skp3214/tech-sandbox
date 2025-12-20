@@ -19,15 +19,15 @@ public class LearnspringbootApplication {
 	}
 
 	@Bean
-	RouterFunction<ServerResponse> myRoutes(CustomerRepository repository){
-		return route()
-				.GET("/customers", request -> ok().body(repository.findAll()))
-				.build();
+	RouterFunction<ServerResponse> myRoutes(CustomerRepository repository) {
+		return route().GET("/customers", _ -> ok().body(repository.findAll())).build();
 	}
+
 }
 
-record Customer(int id, String name){
+record Customer(int id, String name) {
 }
-interface CustomerRepository extends ListCrudRepository<Customer,Integer>{
+
+interface CustomerRepository extends ListCrudRepository<Customer, Integer> {
 
 }
